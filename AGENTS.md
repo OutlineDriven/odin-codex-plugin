@@ -248,6 +248,9 @@ Modern find replacement. **NEVER use find—always fd.**
 
 ## UI/UX Design Guidelines
 
+You must do your best to design modern and elegant UI/UX.
+Don't hold back. Give it your all.
+
 <general_design_guidelines>
 **Design Tokens:** MUST use design system tokens, not hardcoded values.
 
