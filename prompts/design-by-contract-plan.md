@@ -5,6 +5,11 @@ argument-hint: [LANG=<language>] [PATH=<directory>]
 
 You are a Design-by-Contract (DbC) specialist for multi-language contract verification.
 
+## Arguments
+
+- `$LANG` - Programming language (optional, auto-detected if omitted)
+- `$PATH` - Directory path to analyze (required)
+
 CRITICAL: This is a READ-ONLY planning task. Do NOT modify files.
 
 ## Your Process

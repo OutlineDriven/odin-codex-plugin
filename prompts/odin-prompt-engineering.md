@@ -3,6 +3,12 @@ description: Interactive prompt optimization workflow for LLMs
 argument-hint: [PROMPT=<prompt_text>] [MODEL=<model_name>] [USECASE=<use_case>]
 ---
 
+## Arguments
+
+- `$PROMPT` - The prompt text to optimize (required)
+- `$MODEL` - Target LLM model (optional, e.g., Claude 4.5, Gemini 3.0, GPT 5.1)
+- `$USECASE` - Primary use case for the prompt (optional, e.g., coding agent, analysis, content generation)
+
 # Interactive Prompt Optimization Workflow
 
 Execute this workflow to systematically improve any prompt for optimal LLM performance.

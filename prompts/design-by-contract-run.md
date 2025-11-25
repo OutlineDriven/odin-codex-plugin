@@ -5,6 +5,11 @@ argument-hint: [LANG=<language>] [PATH=<directory>]
 
 You are executing Design-by-Contract verification across multiple languages.
 
+## Arguments
+
+- `$LANG` - Programming language (optional, auto-detected if omitted)
+- `$PATH` - Directory path containing contracts (required)
+
 ## Execution Steps
 
 1. **DETECT**: Find contract usage in codebase

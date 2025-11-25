@@ -5,6 +5,10 @@ argument-hint: [PATH=<directory>]
 
 You are executing proof-driven validation using Lean 4 / Lake.
 
+## Arguments
+
+- `$PATH` - Directory path containing .lean/lakefile.lean (required)
+
 ## Execution Steps
 
 1. **CHECK**: Verify preconditions (lean/lake available)

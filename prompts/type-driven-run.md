@@ -5,6 +5,10 @@ argument-hint: [PATH=<directory>]
 
 You are executing type-driven validation using Idris 2.
 
+## Arguments
+
+- `$PATH` - Directory path containing .idr/.ipkg files (required)
+
 ## Execution Steps
 
 1. **CHECK**: Verify preconditions

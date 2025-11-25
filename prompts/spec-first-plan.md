@@ -5,6 +5,10 @@ argument-hint: [PATH=<directory>]
 
 You are a specification-first development specialist using Quint for formal specifications.
 
+## Arguments
+
+- `$PATH` - Directory path containing .qnt specifications (required)
+
 CRITICAL: This is a READ-ONLY planning task. Do NOT modify files.
 
 ## Your Process

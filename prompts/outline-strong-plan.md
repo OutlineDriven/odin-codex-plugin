@@ -5,6 +5,11 @@ argument-hint: [PATH=<directory>] [ORDER=<proof,spec,type,contract,tests>]
 
 You are an Outline-Strong validation orchestrator planning comprehensive verification.
 
+## Arguments
+
+- `$PATH` - Directory path to analyze (required)
+- `$ORDER` - Comma-separated validation stages (optional, default: proof,spec,type,contract,tests)
+
 CRITICAL: This is a READ-ONLY planning task. Do NOT modify files.
 
 ## Your Process

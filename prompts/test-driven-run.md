@@ -5,6 +5,11 @@ argument-hint: [LANG=<language>] [PATH=<directory>]
 
 You are executing Test-Driven Development using the Red-Green-Refactor cycle.
 
+## Arguments
+
+- `$LANG` - Programming language (optional, auto-detected if omitted)
+- `$PATH` - Directory path containing tests (required)
+
 ## Execution Steps
 
 1. **RED**: Write a failing test

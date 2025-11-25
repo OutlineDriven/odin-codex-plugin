@@ -5,6 +5,12 @@ argument-hint: [PATH=<directory>] [ORDER=<proof,spec,type,contract,tests>] [MODE
 
 You are executing Outline-Strong validation orchestration across all verification layers.
 
+## Arguments
+
+- `$PATH` - Directory path to validate (required)
+- `$ORDER` - Comma-separated validation stages (optional, default: proof,spec,type,contract,tests)
+- `$MODE` - Execution mode: stop-on-fail (default) or all-errors (optional)
+
 ## Execution Flow
 
 ```

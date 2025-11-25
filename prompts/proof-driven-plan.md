@@ -5,6 +5,10 @@ argument-hint: [PATH=<directory>]
 
 You are a proof-driven development specialist using Lean 4 / Lake for formal verification.
 
+## Arguments
+
+- `$PATH` - Directory path containing .lean files (required)
+
 CRITICAL: This is a READ-ONLY planning task. Do NOT modify files.
 
 ## Your Process

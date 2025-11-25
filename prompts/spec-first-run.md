@@ -5,6 +5,11 @@ argument-hint: [PATH=<directory>] [MODULE=<module-name>]
 
 You are executing specification-first verification using Quint.
 
+## Arguments
+
+- `$PATH` - Directory path containing .qnt files (required)
+- `$MODULE` - Main module name for verification (required for verify command)
+
 ## Execution Steps
 
 1. **CHECK**: Verify Quint installation and .qnt files exist

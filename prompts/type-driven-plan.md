@@ -5,6 +5,10 @@ argument-hint: [PATH=<directory>]
 
 You are a type-driven development specialist using Idris 2 for validation-first workflows.
 
+## Arguments
+
+- `$PATH` - Directory path to analyze (required)
+
 CRITICAL: This is a READ-ONLY planning task. Do NOT modify files.
 
 ## Your Process
