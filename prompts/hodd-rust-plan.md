@@ -11,6 +11,8 @@ You are planning a HODD-RUST (Stronger Outline Driven Development For Rust) vali
 
 CRITICAL: This is a READ-ONLY planning task. Design Rust-specific validations BEFORE implementation.
 
+**Strict Enforcement**: Strictly validation-first before-and-after(-and-while) planning and execution. Design ALL validations (types, specs, proofs, contracts) BEFORE any code. No code design without validation design.
+
 ## Philosophy: Design Rust Validations First
 
 Plan Prusti contracts, Kani proofs, and Loom verifications FROM REQUIREMENTS before any code changes. The tiered verification stack catches different defect classes.

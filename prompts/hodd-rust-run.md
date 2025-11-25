@@ -32,13 +32,15 @@ Tier | Tool        | Creates              | Validates
 6    | Lean4/Quint | External proofs      | Formal properties
 ```
 
+**Strict Enforcement**: Strictly validation-first before-and-after(-and-while) execution. CREATE validations FIRST, VERIFY continuously, REMEDIATE immediately.
+
 ## Constitutional Rules (Non-Negotiable)
 
-1. **CREATE Before Verify**: Add all annotations/tests from plan
-2. **Tier Order**: Execute tiers in sequence
-3. **Fail-Fast**: Stop on blocking failures
-4. **Miri Advisory**: Local debugging only, not CI
-5. **Complete Remediation**: Fix issues, don't skip verification
+1. **VALIDATION-FIRST COMPLIANCE**: Execute validation-first at every step
+2. **CREATE Before Code**: Verification artifacts MUST exist before implementation
+3. **Tier Order**: Execute tiers in sequence (0 -> 6)
+4. **Fail-Fast**: Stop on blocking failures; no skipping
+5. **Complete Remediation**: Fix all issues; never skip verification
 
 ## Execution Workflow
 
