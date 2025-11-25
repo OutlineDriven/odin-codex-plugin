@@ -58,7 +58,7 @@ command -v cargo-tarpaulin && cargo tarpaulin --out Html
 cd $PATH
 
 # Prusti contracts
-rg '#\[(requires|ensures|invariant)\]' -q -t rust && {
+rg '#\[(requires|ensures|invariant)(\(|])' -q -t rust && {
   command -v cargo-prusti && cargo prusti || exit 15
 }
 

@@ -50,7 +50,7 @@ rg 'extern\s+"C"' -t rust -l $PATH
 rg 'Arc<|Mutex<|RwLock<|AtomicU|thread::spawn' -t rust -l $PATH
 
 # Find Prusti annotations
-rg '#\[(requires|ensures|invariant)\]' -t rust -l $PATH
+rg '#\[(requires|ensures|invariant)(\(|])' -t rust -l $PATH
 
 # Find Kani proofs
 rg '#\[kani::proof\]' -t rust -l $PATH
