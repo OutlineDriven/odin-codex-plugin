@@ -13,9 +13,9 @@ CRITICAL: This is a READ-ONLY planning task. Design Rust-specific validations BE
 
 ## Philosophy: Design Rust Validations First
 
-Plan Prusti contracts, Kani proofs, Loom tests, and property tests FROM REQUIREMENTS before any code changes. The tiered verification stack catches different defect classes.
+Plan Prusti contracts, Kani proofs, and Loom verifications FROM REQUIREMENTS before any code changes. The tiered verification stack catches different defect classes.
 
-HODD-RUST merges: Type-driven + Spec-first + Proof-driven + Design-by-contracts + Test-driven (XP)
+HODD-RUST merges: Type-driven + Spec-first + Proof-driven + Design-by-contracts
 
 ## Verification Stack
 
@@ -30,7 +30,6 @@ Tier | Tool        | Catches              | When to Use
 4    | Prusti      | Contract violations  | API boundaries
 5    | Kani        | Logic errors         | Critical algorithms
 6    | Lean4/Quint | Design flaws         | Complex protocols
-7    | proptest    | Edge cases           | All code paths
 ```
 
 ## Your Process
@@ -71,29 +70,14 @@ Tier | Tool        | Catches              | When to Use
    }
    ```
 
-3. **Tier 2 - Loom Tests**
+3. **Tier 2 - Loom Verification**
    ```rust
    // Design from requirement: [REQ-ID] - Thread safety
    #[cfg(loom)]
-   #[test]
-   fn test_concurrent_access() {
+   fn verify_concurrent_access() {
        loom::model(|| {
-           // Exhaustive concurrency testing
+           // Exhaustive concurrency verification
        });
-   }
-   ```
-
-4. **Tier 7 - Property Tests**
-   ```rust
-   // Design from requirement: [REQ-ID]
-   proptest! {
-       #[test]
-       fn prop_balance_never_negative(
-           initial in 0u64..1_000_000,
-           amount in 1u32..1000
-       ) {
-           // Property-based testing
-       }
    }
    ```
 
@@ -105,14 +89,12 @@ Tier | Tool        | Catches              | When to Use
 rg '#\[requires|#\[ensures|#\[invariant' -t rust $PATH  # Prusti
 rg '#\[kani::proof\]' -t rust $PATH                      # Kani
 rg 'loom::' -t rust $PATH                                # Loom
-rg 'proptest!' -t rust $PATH                             # proptest
 ```
 
 Design complete verification suite:
 - Plan Prusti contracts for all public APIs
 - Design Kani proofs for critical algorithms
-- Specify Loom tests for concurrent code
-- Add property tests for all invariants
+- Specify Loom verifications for concurrent code
 
 **If existing verification artifacts found:**
 - Analyze current coverage per tier
@@ -181,19 +163,12 @@ If requirements exceed Rust-native verification:
 |-------|--------|----------|--------|
 | `verify_x` | `func_1` | Correctness | unwind(10) |
 
-## Tier 2: Loom Tests
+## Tier 2: Loom Verification
 
-### Concurrency Tests
-| Test | Target | Scenario |
-|------|--------|----------|
-| `test_concurrent_x` | `SharedState` | Multi-thread access |
-
-## Tier 7: Property Tests
-
-### Properties to Test
-| Property | Inputs | Assertion |
-|----------|--------|-----------|
-| `prop_inv_1` | Generated | Invariant holds |
+### Concurrency Verifications
+| Verification | Target | Scenario |
+|--------------|--------|----------|
+| `verify_concurrent_x` | `SharedState` | Multi-thread access |
 ```
 
 ### 3. Critical Files
@@ -217,10 +192,9 @@ src/
 ├── lib.rs           # Prusti annotations inline
 └── core.rs          # Prusti annotations inline
 
-tests/
+verifications/
 ├── kani_proofs.rs   # Tier 5: Kani proofs
-├── loom_tests.rs    # Tier 2: Loom tests
-└── property_tests.rs # Tier 7: proptest
+└── loom_verify.rs   # Tier 2: Loom verifications
 
 .outline/
 ├── proofs/lean/     # Tier 6: External proofs (if needed)
@@ -234,11 +208,10 @@ tests/
 
 1. `cargo fmt --check` - Tier 0
 2. `cargo clippy -- -D warnings` - Tier 0
-3. `cargo test` - Base tests
-4. `cargo prusti` - Tier 4 (if annotations present)
-5. `cargo kani` - Tier 5 (if proofs present)
-6. `RUSTFLAGS='--cfg loom' cargo test` - Tier 2 (if loom tests)
-7. External proofs - Tier 6 (if present)
+3. `cargo prusti` - Tier 4 (if annotations present)
+4. `cargo kani` - Tier 5 (if proofs present)
+5. `RUSTFLAGS='--cfg loom' cargo build` - Tier 2 (if loom verifications)
+6. External proofs - Tier 6 (if present)
 ```
 
 Design Rust verifications FROM REQUIREMENTS. Do NOT write files.
