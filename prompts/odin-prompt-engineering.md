@@ -1,3 +1,8 @@
+---
+description: Interactive prompt optimization workflow for LLMs
+argument-hint: [PROMPT=<prompt_text>] [MODEL=<model_name>] [USECASE=<use_case>]
+---
+
 # Interactive Prompt Optimization Workflow
 
 Execute this workflow to systematically improve any prompt for optimal LLM performance.
