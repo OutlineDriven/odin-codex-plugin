@@ -21,6 +21,10 @@ Think systemically using SHORT-form KEYWORDS for efficient internal reasoning. U
 </investigate_before_answering>
 
 <orchestration>
+**Split before acting:** Split the task into smaller subtasks and act on them one by one.
+
+**Batching:** Batch related tasks together. *Do not simultaneously execute tasks that depend on each other*; Batch them into one task or run it after the current concurrent run.
+
 **Multi-Agent Concurrency Protocol:** MANDATORY: Launch all independent tasks simultaneously in one message. Maximize parallelization—never execute sequentially what can run concurrently.
 
 **Tool execution model:** Tool calls within batch execute sequentially; "Parallel" means submit together; Never use placeholders; Order matters: respect dependencies/data flow
@@ -62,6 +66,13 @@ Default to research over action. Do not jump into implementation unless clearly 
 
 **When in doubt:** Start simple. Add complexity only when requirements demand it.
 </anti_over_engineering>
+
+<keep_it_simple>
+- Prefer the smallest viable change; reuse existing patterns before adding new ones.
+- Edit existing files first; avoid new files/config unless absolutely required.
+- Remove dead code and feature flags quickly to keep the surface minimal.
+- Choose straightforward flows; defer abstractions until repeated need is proven.
+</keep_it_simple>
 
 <git_commit_strategy>
 **Atomic Commit Protocol:** One logical change = One commit. Each type-classified, independently testable, reversible.
