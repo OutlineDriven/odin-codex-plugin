@@ -38,6 +38,10 @@ hide_full_access_warning = true
 # [mcp_servers.langchain-docs]
 # url = "https://docs.langchain.com/mcp"
 
+[mcp_servers.fetch]
+command = "uvx"
+args = ["mcp-server-fetch"]
+
 [mcp_servers.actor-critic-thinking]
 command = "npx"
 args = ["-y", "mcp-server-actor-critic-thinking"]
