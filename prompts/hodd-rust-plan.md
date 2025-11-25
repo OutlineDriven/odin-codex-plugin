@@ -1,128 +1,244 @@
 ---
-description: Plan HODD-RUST validation workflow for Rust projects
+description: Design HODD-RUST validation strategy from requirements
 argument-hint: [PATH=<directory>]
 ---
 
-You are planning a HODD-RUST (Stronger Outline Driven Development For Rust) validation strategy.
+You are planning a HODD-RUST (Stronger Outline Driven Development For Rust) validation strategy FROM REQUIREMENTS.
 
 ## Arguments
 
 - `$PATH` - Directory containing Rust project with Cargo.toml (required)
 
-**Critical**: This is a READ-ONLY planning task. Do NOT modify any files.
+CRITICAL: This is a READ-ONLY planning task. Design Rust-specific validations BEFORE implementation.
+
+## Philosophy: Design Rust Validations First
+
+Plan Prusti contracts, Kani proofs, Loom tests, and property tests FROM REQUIREMENTS before any code changes. The tiered verification stack catches different defect classes.
 
 HODD-RUST merges: Type-driven + Spec-first + Proof-driven + Design-by-contracts + Test-driven (XP)
 
+## Verification Stack
+
+```
+Tier | Tool        | Catches              | When to Use
+-----|-------------|----------------------|------------------
+0    | rustfmt     | Style violations     | Always
+0    | clippy      | Common mistakes      | Always
+1    | Miri        | Undefined behavior   | Local debugging ONLY
+2    | Loom        | Race conditions      | Concurrent code
+3    | Flux        | Type refinement      | Numeric constraints
+4    | Prusti      | Contract violations  | API boundaries
+5    | Kani        | Logic errors         | Critical algorithms
+6    | Lean4/Quint | Design flaws         | Complex protocols
+7    | proptest    | Edge cases           | All code paths
+```
+
 ## Your Process
 
-1. **Detect Existing Validation Artifacts**
-   - Find Prusti annotations (#[requires], #[ensures], #[invariant])
-   - Find Kani proofs (#[kani::proof])
-   - Find Flux refinements (#[flux::])
-   - Find Loom concurrency tests (loom::)
-   - Find property tests (proptest!, quickcheck)
+### Phase 1: Extract Verification Requirements
 
-2. **Analyze Safety Requirements**
-   - Identify unsafe blocks requiring Miri/manual review
-   - Find FFI boundaries (extern "C", #[no_mangle])
-   - Locate concurrent code (Arc, Mutex, atomics, spawn)
-   - Detect panic paths (unwrap, expect, panic!)
+1. **Identify Safety Requirements**
+   - Memory safety (ownership, lifetimes)
+   - Thread safety (Send, Sync, data races)
+   - Panic freedom (unwrap, expect, index)
+   - FFI safety (extern, #[no_mangle])
 
-3. **Design Validation Strategy**
-   - Match tools to code criticality
-   - Identify formal verification candidates
-   - Plan external tool usage (Idris2, Lean4, Quint)
+2. **Identify Correctness Requirements**
+   - Algorithm correctness
+   - State machine validity
+   - Protocol compliance
+   - Business logic invariants
 
-4. **Identify Critical Files**
-   - List 3-5 files requiring formal verification
-   - Document applicable validation tools per file
+### Phase 2: Design Verification Artifacts
 
-## Detection Commands
+1. **Tier 4 - Prusti Contracts**
+   ```rust
+   // Design from requirement: [REQ-ID]
+   #[requires(amount > 0)]
+   #[requires(amount <= self.balance)]
+   #[ensures(self.balance == old(self.balance) - amount)]
+   fn withdraw(&mut self, amount: u64) -> u64
+   ```
 
+2. **Tier 5 - Kani Proofs**
+   ```rust
+   // Design from requirement: [REQ-ID]
+   #[cfg(kani)]
+   #[kani::proof]
+   #[kani::unwind(10)]
+   fn verify_withdraw_safe() {
+       // Bounded model checking for withdraw
+   }
+   ```
+
+3. **Tier 2 - Loom Tests**
+   ```rust
+   // Design from requirement: [REQ-ID] - Thread safety
+   #[cfg(loom)]
+   #[test]
+   fn test_concurrent_access() {
+       loom::model(|| {
+           // Exhaustive concurrency testing
+       });
+   }
+   ```
+
+4. **Tier 7 - Property Tests**
+   ```rust
+   // Design from requirement: [REQ-ID]
+   proptest! {
+       #[test]
+       fn prop_balance_never_negative(
+           initial in 0u64..1_000_000,
+           amount in 1u32..1000
+       ) {
+           // Property-based testing
+       }
+   }
+   ```
+
+### Phase 3: Conditional Strategy
+
+**If NO existing Rust verification artifacts:**
 ```bash
-# Find unsafe blocks
-rg 'unsafe\s*\{' -t rust -l $PATH
-
-# Find FFI boundaries
-rg 'extern\s+"C"' -t rust -l $PATH
-
-# Find concurrent code
-rg 'Arc<|Mutex<|RwLock<|AtomicU|thread::spawn' -t rust -l $PATH
-
-# Find Prusti annotations
-rg '#\[(requires|ensures|invariant)(\(|])' -t rust -l $PATH
-
-# Find Kani proofs
-rg '#\[kani::proof\]' -t rust -l $PATH
-
-# Find Flux refinements
-rg '#\[flux::' -t rust -l $PATH
-
-# Find Loom tests
-rg 'loom::' -t rust -l $PATH
-
-# Find property tests
-rg 'proptest!|quickcheck' -t rust -l $PATH
-
-# Find panic paths
-rg '\.unwrap\(\)|\.expect\(|panic!' -t rust -l $PATH
-
-# Count test files
-fd -e rs -g '*test*' $PATH | wc -l
+# Check for existing verifications
+rg '#\[requires|#\[ensures|#\[invariant' -t rust $PATH  # Prusti
+rg '#\[kani::proof\]' -t rust $PATH                      # Kani
+rg 'loom::' -t rust $PATH                                # Loom
+rg 'proptest!' -t rust $PATH                             # proptest
 ```
 
-## External Tool Detection
+Design complete verification suite:
+- Plan Prusti contracts for all public APIs
+- Design Kani proofs for critical algorithms
+- Specify Loom tests for concurrent code
+- Add property tests for all invariants
 
-```bash
-# Idris2 models
-fd -e idr -e lidr $PATH
+**If existing verification artifacts found:**
+- Analyze current coverage per tier
+- Identify gaps in verification
+- Design additions for new requirements
 
-# Lean4 proofs
-fd lakefile.lean $PATH
+### Phase 4: External Proof Integration
 
-# Quint specifications
-fd -e qnt $PATH
+If requirements exceed Rust-native verification:
 
-# Verus annotations
-rg 'verus!' -t rust -l $PATH
 ```
-
-## Tool Stack Reference
-
-| Layer | Tool | When to Use |
-|-------|------|-------------|
-| 0 | rustc/clippy | Always |
-| 0 | cargo-audit/deny | CI mandatory |
-| 1 | Miri | Local UB debugging ONLY |
-| 2 | Loom | Critical concurrency |
-| 3 | Flux | Refined types |
-| 4 | Prusti | Contract verification |
-| 5 | Lean4 | Formal proofs (external) |
-| 6 | Kani | Bounded model checking |
-| 6 | Quint | Protocol specs (external) |
+.outline/
+├── proofs/
+│   └── lean/          # Complex algorithm proofs
+│       ├── lakefile.lean
+│       └── Algorithm.lean
+└── specs/
+    └── protocol.qnt   # State machine specifications
+```
 
 ## Exit Codes Reference
 
 | Code | Meaning |
 |------|---------|
-| 0 | Planning complete |
+| 0 | Plan complete, verifications designed |
 | 11 | Toolchain not found |
-| 12 | No Rust files found |
+| 12 | Unable to design from requirements |
 
 ## Required Output
 
-1. **Validation Artifact Inventory**
-   - Existing annotations/proofs
-   - Test coverage estimate
+### 1. Safety Analysis
 
-2. **Safety Analysis**
-   - Unsafe block count/locations
-   - FFI/concurrency summary
+```markdown
+## Safety Requirements
 
-3. **Validation Strategy**
-   - Tool selection per code region
-   - Prioritized verification targets
+### Memory Safety
+- [ ] Ownership correctly modeled
+- [ ] Lifetimes properly bounded
+- [ ] No undefined behavior paths
 
-4. **Critical Files List** (3-5 files)
-   - Path with rationale
-   - Applicable tools
+### Thread Safety
+- [ ] Send/Sync correctly derived
+- [ ] No data race possibilities
+- [ ] Lock ordering documented
+
+### Panic Freedom
+- Files with `.unwrap()`: [count]
+- Files with `.expect()`: [count]
+- Mitigation strategy: [approach]
+```
+
+### 2. Verification Design by Tier
+
+```markdown
+## Tier 4: Prusti Contracts
+
+### Contracts to Add
+| Function | Preconditions | Postconditions | Invariants |
+|----------|---------------|----------------|------------|
+| `func_1` | PRE-1, PRE-2 | POST-1 | INV-1 |
+
+## Tier 5: Kani Proofs
+
+### Proofs to Create
+| Proof | Target | Property | Bounds |
+|-------|--------|----------|--------|
+| `verify_x` | `func_1` | Correctness | unwind(10) |
+
+## Tier 2: Loom Tests
+
+### Concurrency Tests
+| Test | Target | Scenario |
+|------|--------|----------|
+| `test_concurrent_x` | `SharedState` | Multi-thread access |
+
+## Tier 7: Property Tests
+
+### Properties to Test
+| Property | Inputs | Assertion |
+|----------|--------|-----------|
+| `prop_inv_1` | Generated | Invariant holds |
+```
+
+### 3. Critical Files
+
+```markdown
+## Critical Files for Verification
+
+| File | Tier | Tool | Rationale |
+|------|------|------|-----------|
+| `src/core.rs` | 4, 5 | Prusti, Kani | Core logic |
+| `src/sync.rs` | 2 | Loom | Concurrency |
+| `src/api.rs` | 4 | Prusti | Public API |
+```
+
+### 4. Artifact Structure
+
+```markdown
+## Verification Artifacts
+
+src/
+├── lib.rs           # Prusti annotations inline
+└── core.rs          # Prusti annotations inline
+
+tests/
+├── kani_proofs.rs   # Tier 5: Kani proofs
+├── loom_tests.rs    # Tier 2: Loom tests
+└── property_tests.rs # Tier 7: proptest
+
+.outline/
+├── proofs/lean/     # Tier 6: External proofs (if needed)
+└── specs/           # Tier 6: Quint specs (if needed)
+```
+
+### 5. Validation Pipeline
+
+```markdown
+## Execution Order (for run phase)
+
+1. `cargo fmt --check` - Tier 0
+2. `cargo clippy -- -D warnings` - Tier 0
+3. `cargo test` - Base tests
+4. `cargo prusti` - Tier 4 (if annotations present)
+5. `cargo kani` - Tier 5 (if proofs present)
+6. `RUSTFLAGS='--cfg loom' cargo test` - Tier 2 (if loom tests)
+7. External proofs - Tier 6 (if present)
+```
+
+Design Rust verifications FROM REQUIREMENTS. Do NOT write files.

@@ -1,163 +1,260 @@
 ---
-description: Execute Design-by-Contract verification
+description: Execute Design-by-Contract: CREATE contracts from plan, VERIFY enforcement, TEST violations
 argument-hint: [LANG=<language>] [PATH=<directory>]
 ---
 
-You are executing Design-by-Contract verification across multiple languages.
+You are executing Design-by-Contract verification. Your mission: CREATE the contracts designed in the plan phase, VERIFY enforcement, then TEST that violations are caught.
 
 ## Arguments
 
 - `$LANG` - Programming language (optional, auto-detected if omitted)
-- `$PATH` - Directory path containing contracts (required)
+- `$PATH` - Directory path for contract annotations (required)
 
-## Execution Steps
+## Philosophy: Create Contracts, Then Enforce
 
-1. **DETECT**: Find contract usage in codebase
-2. **VERIFY**: Check all contracts satisfied
-3. **REMEDIATE**: Add missing contracts or fix violations
+This is the EXECUTION phase. The plan phase designed preconditions, postconditions, and invariants. Now you:
+1. CREATE contract annotations from plan design
+2. VERIFY contracts are enforced at runtime
+3. TEST that contract violations are properly caught
 
-## Commands by Language
+## Constitutional Rules (Non-Negotiable)
 
-### Rust
-```bash
-# Detect
-rg '#\[pre\(|#\[post\(|debug_assert!' --type rust $PATH
+1. **CREATE All Contracts**: Implement every PRE, POST, INV from plan
+2. **Enforcement Enabled**: Runtime checks must be active
+3. **Violations Caught**: Tests prove contracts work
+4. **Documentation**: Each contract traces to requirement
 
-# Verify (debug build enables assertions)
-cargo build && cargo test
+## Execution Workflow
 
-# Check runtime flags
-[[ "$CARGO_BUILD_TYPE" != "release" ]] || echo "Warning: debug assertions disabled"
+### Phase 1: CREATE Contract Annotations (from plan)
+
+**Python (deal):**
+```python
+# src/account.py
+# Contracts from plan design
+
+import deal
+
+@deal.inv(lambda self: self.balance >= 0)  # From plan INV-1
+class Account:
+    def __init__(self, balance: int):
+        self.balance = balance
+
+    @deal.pre(lambda self, amount: amount > 0)  # From plan PRE-1
+    @deal.pre(lambda self, amount: amount <= self.balance)  # From plan PRE-2
+    @deal.ensure(lambda self, amount, result: result == amount)  # From plan POST-1
+    @deal.ensure(lambda self, amount, result:
+        self.balance == deal.old(self.balance) - amount)  # From plan POST-2
+    def withdraw(self, amount: int) -> int:
+        self.balance -= amount
+        return amount
 ```
 
-### TypeScript
-```bash
-# Detect
-rg 'z\.object|invariant\(|\.parse\(' --type ts $PATH
+**Rust (contracts crate):**
+```rust
+// src/account.rs
+// Contracts from plan design
 
-# Verify
-npx vitest run
+use contracts::*;
 
-# Runtime check
-[[ "$NODE_ENV" == "development" ]] || echo "Warning: not in dev mode"
+pub struct Account {
+    balance: u64,
+}
+
+impl Account {
+    #[requires(amount > 0, "PRE-1: Amount must be positive")]
+    #[requires(amount <= self.balance, "PRE-2: Insufficient balance")]
+    #[ensures(ret == amount, "POST-1: Returns withdrawn amount")]
+    #[ensures(self.balance == old(self.balance) - amount, "POST-2: Balance reduced")]
+    pub fn withdraw(&mut self, amount: u64) -> u64 {
+        self.balance -= amount;
+        amount
+    }
+}
+
+// Class invariant
+#[invariant(self.balance <= u64::MAX)]
+impl Account {
+    // All methods checked against invariant
+}
 ```
 
-### Python
-```bash
-# Detect
-rg '@pre\(|@post\(|@invariant' --type py $PATH
+**TypeScript (Zod + invariant):**
+```typescript
+// src/account.ts
+// Contracts from plan design
 
-# Verify
-python -m pytest
+import { z } from 'zod';
+import invariant from 'tiny-invariant';
 
-# Runtime check (not -O optimized)
-python -c "assert __debug__, 'assertions disabled'"
+// From plan PRE-1, PRE-2
+const WithdrawInput = z.object({
+  amount: z.number().positive("PRE-1: Amount must be positive"),
+});
+
+class Account {
+  private _balance: number;
+
+  constructor(balance: number) {
+    this._balance = balance;
+  }
+
+  // From plan INV-1
+  private checkInvariant(): void {
+    invariant(this._balance >= 0, "INV-1: Balance must be non-negative");
+  }
+
+  withdraw(amount: number): number {
+    // PRE: Validate input
+    WithdrawInput.parse({ amount });
+    invariant(amount <= this._balance, "PRE-2: Insufficient balance");
+
+    const oldBalance = this._balance;
+    this._balance -= amount;
+
+    // POST: Verify postconditions
+    invariant(this._balance === oldBalance - amount, "POST-2: Balance reduction");
+
+    // INV: Check invariant
+    this.checkInvariant();
+
+    return amount;  // POST-1: Returns amount
+  }
+}
 ```
 
-### Java
-```bash
-# Detect
-rg 'checkArgument|checkState' --type java $PATH
+**Kotlin (Native):**
+```kotlin
+// src/Account.kt
+// Contracts from plan design
 
-# Verify
-mvn test
+class Account(private var balance: Int) {
+    init {
+        require(balance >= 0) { "INV-1: Balance must be non-negative" }
+    }
 
-# Check assertions enabled
-java -ea -version 2>&1 | grep -q "enabled" || echo "Use: java -ea"
+    fun withdraw(amount: Int): Int {
+        // PRE from plan
+        require(amount > 0) { "PRE-1: Amount must be positive" }
+        require(amount <= balance) { "PRE-2: Insufficient balance" }
+
+        val oldBalance = balance
+        balance -= amount
+
+        // POST from plan
+        check(balance == oldBalance - amount) { "POST-2: Balance reduction" }
+        check(balance >= 0) { "INV-1: Invariant violated" }
+
+        return amount  // POST-1
+    }
+}
 ```
 
-### Kotlin
+### Phase 2: VERIFY Contract Enforcement
+
 ```bash
-# Detect
-rg 'contract \{|require\(|check\(' --type kotlin $PATH
+# Python: Ensure debug mode (assertions enabled)
+python -c "assert __debug__, 'assertions disabled'" || exit 13
 
-# Verify
-./gradlew test
+# Run deal linter
+deal lint src/ || exit 14
 
-# Runtime check
+# TypeScript: Ensure not in production mode
+[[ "$NODE_ENV" != "production" ]] || echo "Warning: contracts may be disabled"
+
+# Rust: Build in debug mode (assertions enabled)
+cargo build  # Not --release
+
+# Kotlin: Enable assertions
 java -ea -version
 ```
 
-### C#
-```bash
-# Detect
-rg 'Guard\.Against|Contract\.' --type cs $PATH
+### Phase 3: TEST Contract Violations
 
-# Verify
-dotnet test
+```python
+# tests/test_contracts.py
+# Tests from plan: Verify contracts catch violations
 
-# Check Debug configuration
-dotnet build -c Debug
+import pytest
+import deal
+
+class TestContractViolations:
+    """Verify contracts are enforced"""
+
+    def test_precondition_negative_amount(self):
+        """PRE-1 violation caught"""
+        account = Account(100)
+        with pytest.raises(deal.PreContractError):
+            account.withdraw(-50)
+
+    def test_precondition_insufficient_balance(self):
+        """PRE-2 violation caught"""
+        account = Account(100)
+        with pytest.raises(deal.PreContractError):
+            account.withdraw(150)
+
+    def test_invariant_enforced(self):
+        """INV-1 cannot be violated"""
+        # This should be impossible via public API
+        account = Account(100)
+        account.withdraw(100)
+        assert account.balance >= 0
+
+    def test_postcondition_return_value(self):
+        """POST-1 verified"""
+        account = Account(100)
+        result = account.withdraw(30)
+        assert result == 30
 ```
 
-### C++
-```bash
-# Detect
-rg 'Expects\(|Ensures\(' --type cpp $PATH
+## Contract Libraries Reference
 
-# Verify (NDEBUG not defined)
-cmake -DCMAKE_BUILD_TYPE=Debug .. && make && ctest
+| Language | Library | Install |
+|----------|---------|---------|
+| Python | deal | `pip install deal` |
+| Rust | contracts | `cargo add contracts` |
+| TypeScript | Zod + tiny-invariant | `npm install zod tiny-invariant` |
+| Kotlin | Native | Built-in |
+| Java | Guava | `com.google.guava:guava` |
+| C# | Guard.Against | `Ardalis.GuardClauses` |
+| C++ | GSL | `Microsoft.GSL` |
 
-# Check NDEBUG
-grep -r "NDEBUG" $PATH && echo "Warning: assertions may be disabled"
-```
+## Validation Gates
 
-### C
-```bash
-# Detect
-rg 'assert\(' --type c $PATH
+| Gate | Command | Pass Criteria | Blocking |
+|------|---------|---------------|----------|
+| Contracts Created | Grep for annotations | Found | Yes |
+| Enforcement Mode | Check debug/assertions | Enabled | Yes |
+| Lint | `deal lint` or equivalent | No warnings | Yes |
+| Violation Tests | Run contract tests | All pass | Yes |
 
-# Verify
-make debug && ./test_runner
+## Required Output
 
-# Check NDEBUG
-grep -r "NDEBUG" $PATH && echo "Warning: assertions may be disabled"
-```
+1. **Created Contracts**
+   - PRE-* annotations added
+   - POST-* annotations added
+   - INV-* annotations added
+   - Traceability to plan
+
+2. **Enforcement Status**
+   - Debug mode: ENABLED/DISABLED
+   - Lint results: PASS/FAIL
+
+3. **Violation Test Results**
+   - PRE violations caught: Yes/No
+   - POST violations caught: Yes/No
+   - INV violations caught: Yes/No
 
 ## Exit Codes
 
-| Code | Meaning | Action |
-|------|---------|--------|
-| 0 | Success | All contracts satisfied |
-| 1 | Precondition | Fix caller to provide valid inputs |
-| 2 | Postcondition | Fix function to return valid results |
-| 3 | Invariant | Fix state mutation logic |
-| 11 | No contracts | Add contracts to public APIs |
-| 13 | Flags disabled | Enable debug/assertion flags |
+| Code | Meaning |
+|------|---------|
+| 0 | All contracts enforced and tested |
+| 1 | Precondition violation in production code |
+| 2 | Postcondition violation in production code |
+| 3 | Invariant violation in production code |
+| 11 | Contract library not installed |
+| 13 | Runtime assertions disabled |
+| 14 | Contract lint failed |
 
-## Contract Templates
-
-### Precondition (input validation)
-```
-Precondition: x must be positive (got: {x})
-```
-
-### Postcondition (output guarantee)
-```
-Postcondition: result must exceed input (result={r}, input={x})
-```
-
-### Invariant (state consistency)
-```
-Invariant: balance must be non-negative (balance={b})
-```
-
-## Workflow
-
-```
-DETECT contracts
-  |
-  v
-VERIFY (exit 1-3 on violations)
-  |
-  v
-REMEDIATE missing/violated
-  |
-  v
-RE-VERIFY
-  |
-  v
-SUCCESS (exit 0)
-```
-
-Execute detection, then verification. Report violations with context.
+Execute CREATE -> VERIFY -> TEST cycle.

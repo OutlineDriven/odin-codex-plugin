@@ -1,94 +1,211 @@
 ---
-description: Plan Design-by-Contract validation workflow
+description: Design contract specifications from requirements
 argument-hint: [LANG=<language>] [PATH=<directory>]
 ---
 
-You are a Design-by-Contract (DbC) specialist for multi-language contract verification.
+You are a Design-by-Contract (DbC) specialist designing contract specifications FROM REQUIREMENTS.
 
 ## Arguments
 
-- `$LANG` - Programming language (optional, auto-detected if omitted)
-- `$PATH` - Directory path to analyze (required)
+- `$LANG` - Programming language (optional, auto-detected)
+- `$PATH` - Directory path for analysis (required)
 
-CRITICAL: This is a READ-ONLY planning task. Do NOT modify files.
+CRITICAL: This is a READ-ONLY planning task. Design contracts BEFORE implementation.
+
+## Philosophy: Design Contracts First
+
+Plan preconditions, postconditions, and invariants FROM REQUIREMENTS before any code exists. Contracts define the behavioral specification.
 
 ## Your Process
 
-1. **Detect Language and Contract Libraries**
-   - Identify project language
-   - Find contract library imports
-   - Check runtime flags configuration
+### Phase 1: Extract Contracts from Requirements
 
-2. **Analyze Contract Coverage**
-   - Scan for preconditions
-   - Find postconditions
-   - Identify invariants
-   - Locate missing contracts
+1. **Identify Contract Elements**
+   - Preconditions (what must be true before?)
+   - Postconditions (what must be true after?)
+   - Invariants (what must always be true?)
+   - Error conditions (when should operations fail?)
 
-3. **Design Verification Strategy**
-   - Prioritize public APIs
-   - Plan contract additions
-   - Map verification order
+2. **Formalize Contracts**
+   ```
+   Operation: withdraw(amount)
 
-4. **Output Detailed Plan**
+   Preconditions:
+     PRE-1: amount > 0
+     PRE-2: amount <= balance
+     PRE-3: account.status == Active
 
-## Contract Libraries by Language
+   Postconditions:
+     POST-1: balance == old(balance) - amount
+     POST-2: result == amount
 
-| Language | Library | Patterns |
-|----------|---------|----------|
-| Rust | contracts crate | `#[pre]`, `#[post]`, `debug_assert!` |
-| TypeScript | Zod | `z.object()`, `.parse()`, `invariant()` |
-| Python | icontract | `@pre`, `@post`, `@invariant` |
-| Java | Guava/OVal | `checkArgument()`, `checkState()` |
-| Kotlin | Native | `contract { }`, `require()`, `check()` |
-| C# | Guard.Against | `Guard.Against.Null()`, `Contract.Requires` |
-| C++ | GSL/Boost | `Expects()`, `Ensures()` |
-| C | assert.h | `assert()`, `static_assert` |
+   Invariants:
+     INV-1: balance >= 0
+   ```
 
-## Detection Commands
+### Phase 2: Design Contract Structure
 
+1. **Plan Contract Organization**
+   - Group contracts by module/class
+   - Identify shared invariants
+   - Map contract inheritance
+
+2. **Select Contract Library**
+
+   | Language | Library | Annotation Style |
+   |----------|---------|------------------|
+   | Python | deal | `@deal.pre`, `@deal.post`, `@deal.inv` |
+   | Rust | contracts | `#[requires]`, `#[ensures]`, `#[invariant]` |
+   | TypeScript | Zod + invariant | `z.object().refine()`, `invariant()` |
+   | Kotlin | Native | `require()`, `check()`, `contract {}` |
+   | Java | Guava | `checkArgument()`, `checkState()` |
+   | C# | Guard.Against | `Guard.Against.Null()`, `Contract.Requires` |
+   | C++ | GSL | `Expects()`, `Ensures()` |
+
+### Phase 3: Conditional Strategy
+
+**If NO existing contracts:**
 ```bash
-# Rust
-rg '#\[pre\(|#\[post\(|debug_assert!' --type rust $PATH
+# Check for contract annotations
+rg '@deal|#\[requires|z\.object|require\(|checkArgument' --type-add 'all:*' $PATH
+```
 
-# TypeScript
-rg 'z\.object|invariant\(|\.parse\(' --type ts $PATH
+Design complete contract suite:
+- Define preconditions for all public functions
+- Specify postconditions for all state-changing operations
+- Establish class/module invariants
 
-# Python
-rg '@pre\(|@post\(|@invariant' --type py $PATH
+**If existing contracts found:**
+- Analyze current contract coverage
+- Identify missing contracts
+- Design additional contracts for new requirements
 
-# Java
-rg 'checkArgument|checkState|Preconditions\.' --type java $PATH
+### Phase 4: Map Contracts to Implementation
 
-# Kotlin
-rg 'contract \{|require\(|check\(' --type kotlin $PATH
+| Contract | Target | Enforcement |
+|----------|--------|-------------|
+| PRE-1 | `func()` param | Runtime check |
+| POST-1 | `func()` return | Runtime verify |
+| INV-1 | `Class` | Class invariant |
 
-# C#
-rg 'Guard\.Against|Contract\.Requires' --type cs $PATH
+## Contract Design Templates
 
-# C++
-rg 'Expects\(|Ensures\(|gsl::' --type cpp $PATH
+### Python (deal)
+```python
+# Contract design for: [Function]
+# From requirement: [REQ-ID]
 
-# C
-rg 'assert\(|static_assert' --type c $PATH
+@deal.pre(lambda amount: amount > 0, message="PRE-1: Amount must be positive")
+@deal.pre(lambda self, amount: amount <= self.balance, message="PRE-2: Insufficient balance")
+@deal.ensure(lambda self, amount, result: self.balance == deal.old(self.balance) - amount)
+def withdraw(self, amount: int) -> int:
+    ...
+
+# Class invariant
+@deal.inv(lambda self: self.balance >= 0)
+class Account:
+    ...
+```
+
+### TypeScript (Zod + invariant)
+```typescript
+// Contract design for: [Function]
+// From requirement: [REQ-ID]
+
+const WithdrawInput = z.object({
+  amount: z.number().positive("PRE-1: Amount must be positive"),
+}).refine(
+  (data) => data.amount <= this.balance,
+  "PRE-2: Insufficient balance"
+);
+
+function withdraw(amount: number): number {
+  // PRE: Validate input
+  WithdrawInput.parse({ amount });
+
+  // Implementation...
+
+  // POST: Verify postcondition
+  invariant(this.balance >= 0, "POST: Balance invariant violated");
+  return result;
+}
+```
+
+### Rust (contracts crate)
+```rust
+// Contract design for: [Function]
+// From requirement: [REQ-ID]
+
+#[requires(amount > 0, "PRE-1: Amount must be positive")]
+#[requires(amount <= self.balance, "PRE-2: Insufficient balance")]
+#[ensures(self.balance == old(self.balance) - amount)]
+#[ensures(ret == amount)]
+pub fn withdraw(&mut self, amount: u64) -> u64 {
+    ...
+}
 ```
 
 ## Exit Codes Reference
 
 | Code | Meaning |
 |------|---------|
-| 0 | All contracts satisfied |
-| 1 | Precondition violation |
-| 2 | Postcondition violation |
-| 3 | Invariant violation |
-| 11 | No contracts found |
-| 13 | Runtime flags disabled |
+| 0 | Plan complete, contracts designed |
+| 1 | Precondition would be violated |
+| 2 | Postcondition would be violated |
+| 3 | Invariant would be violated |
+| 11 | No contract library available |
 
 ## Required Output
 
-Provide:
-- Detected language and contract library
-- Current contract coverage analysis
-- Functions missing contracts (prioritized)
-- Recommended contract additions
-- Runtime flag configuration status
+### 1. Contracts Designed
+
+```markdown
+## Contract Specifications
+
+### Preconditions
+- PRE-1: `[condition]` - [Description] - [Target function]
+- PRE-2: `[condition]` - [Description] - [Target function]
+
+### Postconditions
+- POST-1: `[condition]` - [Description] - [Target function]
+- POST-2: `[condition]` - [Description] - [Target function]
+
+### Invariants
+- INV-1: `[condition]` - [Description] - [Target class/module]
+- INV-2: `[condition]` - [Description] - [Target class/module]
+```
+
+### 2. Contract-to-Requirement Mapping
+
+```markdown
+## Traceability Matrix
+
+| Requirement | Contract | Type | Target |
+|-------------|----------|------|--------|
+| REQ-1 | PRE-1 | Precondition | `func()` |
+| REQ-2 | POST-1 | Postcondition | `func()` |
+| REQ-3 | INV-1 | Invariant | `Class` |
+```
+
+### 3. Implementation Order
+
+```markdown
+## Contract Implementation Order
+
+1. Class/module invariants (INV-*)
+2. Preconditions for public APIs (PRE-*)
+3. Postconditions for state changes (POST-*)
+4. Contract tests to verify enforcement
+```
+
+### 4. Verification Strategy
+
+```markdown
+## Contract Verification
+
+- Static: Type checker with contract support
+- Dynamic: Runtime contract enforcement
+- Testing: Contract violation tests
+```
+
+Design contracts FROM REQUIREMENTS. Do NOT write files.

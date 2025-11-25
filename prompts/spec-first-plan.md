@@ -1,84 +1,218 @@
 ---
-description: Plan spec-first development workflow with Quint
+description: Design Quint specification strategy from requirements
 argument-hint: [PATH=<directory>]
 ---
 
-You are a specification-first development specialist using Quint for formal specifications.
+You are a specification-first development specialist designing Quint formal specifications FROM REQUIREMENTS.
 
 ## Arguments
 
-- `$PATH` - Directory path containing .qnt specifications (required)
+- `$PATH` - Directory path for specification artifacts (required)
 
-CRITICAL: This is a READ-ONLY planning task. Do NOT modify files.
+CRITICAL: This is a READ-ONLY planning task. Design specifications BEFORE implementation.
+
+## Philosophy: Design Specifications First
+
+Plan state machines, invariants, and temporal properties FROM REQUIREMENTS before any code exists. Specifications define what the system MUST do.
 
 ## Your Process
 
-1. **Detect Quint Artifacts**
-   - Search for `.qnt` specification files
-   - Verify `quint` is available on PATH
-   - Check for existing spec modules
+### Phase 1: Extract Specification from Requirements
 
-2. **Analyze Specification Coverage**
-   - Find state machine definitions
-   - Identify invariants and properties
-   - Check for temporal properties
-   - Map action definitions
+1. **Identify State Machine Elements**
+   - System states (what configurations exist?)
+   - State variables (what data is tracked?)
+   - Actions (what operations change state?)
+   - Invariants (what must always be true?)
 
-3. **Design Verification Strategy**
-   - Prioritize invariants for verification
-   - Plan property-based test generation
-   - Map spec to implementation stubs
+2. **Formalize as Quint Constructs**
+   ```quint
+   // Example state machine design from requirements
+   module account {
+     type Status = Active | Suspended | Closed
+     type Account = { balance: int, status: Status }
 
-4. **Output Detailed Plan**
+     var accounts: str -> Account
 
-## Search Commands
+     // Invariant from requirement: "Balance never negative"
+     val inv_balanceNonNegative = accounts.keys().forall(id =>
+       accounts.get(id).balance >= 0
+     )
+   }
+   ```
 
+### Phase 2: Design Specification Structure
+
+1. **Plan Module Hierarchy**
+   ```
+   Main Specification
+   ├── types.qnt - Type definitions
+   ├── state.qnt - State variables
+   ├── actions.qnt - State transitions
+   ├── invariants.qnt - Properties that must hold
+   └── main.qnt - Module composition
+   ```
+
+2. **Design Specification Artifacts**
+   ```
+   .outline/specs/
+   ├── types.qnt
+   ├── state.qnt
+   ├── actions.qnt
+   ├── invariants.qnt
+   └── main.qnt
+   ```
+
+### Phase 3: Conditional Strategy
+
+**If NO existing Quint artifacts:**
 ```bash
-# Find Quint artifacts
+# Check for existing specs
 fd -e qnt $PATH
+```
 
-# Check Quint availability
-command -v quint
+Design complete specification suite:
+- Create type definitions for all domain concepts
+- Plan state variables and initial states
+- Design actions for all operations
+- Specify invariants for all requirements
 
-# Find invariants
-rg 'val\s+\w+.*=\s*$NODES|invariant' --type-add 'quint:*.qnt' -t quint $PATH
+**If existing Quint artifacts found:**
+- Analyze current specification coverage
+- Identify missing invariants or actions
+- Design extensions for new requirements
 
-# Find actions
-rg 'action\s+\w+' --type-add 'quint:*.qnt' -t quint $PATH
+### Phase 4: Map Specifications to Implementation
 
-# Find temporal properties
-rg 'temporal|eventually|always' --type-add 'quint:*.qnt' -t quint $PATH
+| Quint Construct | Implementation Target | Language |
+|-----------------|----------------------|----------|
+| `action withdraw` | `Account.withdraw()` | [Target] |
+| `inv_balance` | Runtime assertion | [Target] |
+
+## Specification Design Templates
+
+### Types Module
+```quint
+// .outline/specs/types.qnt
+// Designed from requirements
+
+module types {
+  // Domain types from requirements
+  type EntityId = str
+  type Amount = int
+  type Status = Pending | Active | Complete
+
+  // Compound types
+  type Entity = {
+    id: EntityId,
+    value: Amount,
+    status: Status
+  }
+}
+```
+
+### State Module
+```quint
+// .outline/specs/state.qnt
+module state {
+  import types.*
+
+  // State variables
+  var entities: EntityId -> Entity
+  var totalValue: Amount
+
+  // Initial state
+  val init = all {
+    entities' = Map(),
+    totalValue' = 0
+  }
+}
+```
+
+### Invariants Module
+```quint
+// .outline/specs/invariants.qnt
+module invariants {
+  import state.*
+
+  // From requirement: [Requirement ID]
+  val inv_valueNonNegative = entities.keys().forall(id =>
+    entities.get(id).value >= 0
+  )
+
+  // From requirement: [Requirement ID]
+  val inv_totalConsistent = totalValue ==
+    entities.keys().fold(0, (acc, id) => acc + entities.get(id).value)
+}
 ```
 
 ## Exit Codes Reference
 
 | Code | Meaning |
 |------|---------|
-| 0 | Specification verified |
+| 0 | Plan complete, specs designed |
 | 11 | Quint not installed |
-| 12 | Invalid specification syntax |
-| 13 | Specification violation |
-| 14 | Property verification failed |
-| 15 | Stub generation incomplete |
-
-## Language Mapping
-
-| Language | Property Test Library |
-|----------|----------------------|
-| Rust | proptest |
-| Python | hypothesis |
-| TypeScript | fast-check |
-| Go | gopter |
-| Java | jqwik |
-| C# | FsCheck |
-| C++ | rapidcheck |
+| 12 | Unable to design specs from requirements |
 
 ## Required Output
 
-Provide:
-- Discovered .qnt files
-- State machine modules found
-- Invariants defined
-- Actions defined
-- Verification command sequence
-- Implementation stub targets
+### 1. State Machine Design
+
+```markdown
+## State Machine Elements
+
+### States
+- STATE-1: [Description]
+- STATE-2: [Description]
+
+### Variables
+- VAR-1: [Name] : [Type] - [Purpose]
+- VAR-2: [Name] : [Type] - [Purpose]
+
+### Actions
+- ACT-1: [Name] - [State transition description]
+- ACT-2: [Name] - [State transition description]
+```
+
+### 2. Invariants Designed
+
+```markdown
+## Invariants from Requirements
+
+- INV-1: `inv_name` - [Property description]
+- INV-2: `inv_name` - [Property description]
+```
+
+### 3. Specification Artifact Structure
+
+```markdown
+## Artifact Structure
+
+.outline/specs/
+├── types.qnt - Domain type definitions
+├── state.qnt - State variables and init
+├── actions.qnt - State transitions
+├── invariants.qnt - Properties to verify
+└── main.qnt - Module composition
+```
+
+### 4. Verification Command Sequence
+
+```markdown
+## Verification Commands (for execution phase)
+
+1. `quint typecheck .outline/specs/*.qnt` - Type check all specs
+2. `quint verify --main=main --invariant=inv_name .outline/specs/main.qnt` - Verify invariants
+```
+
+### 5. Implementation Mapping
+
+```markdown
+## Spec-to-Implementation Mapping
+
+| Quint Action | Target Function | Property Tests |
+|--------------|-----------------|----------------|
+| `action_1` | `module.func()` | `test_prop_1` |
+```
+
+Design specifications FROM REQUIREMENTS. Do NOT write files.

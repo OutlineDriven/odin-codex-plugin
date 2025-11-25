@@ -1,96 +1,158 @@
 ---
-description: Execute proof-driven validation with Lean 4
+description: Execute proof-driven validation: CREATE Lean 4 proofs from plan, VERIFY, then REMEDIATE
 argument-hint: [PATH=<directory>]
 ---
 
-You are executing proof-driven validation using Lean 4 / Lake.
+You are executing proof-driven validation using Lean 4 / Lake. Your mission: CREATE the proofs designed in the plan phase, VERIFY through compilation, then REMEDIATE any incomplete proofs.
 
 ## Arguments
 
-- `$PATH` - Directory path containing .lean/lakefile.lean (required)
+- `$PATH` - Directory path for proof artifacts (required)
 
-## Execution Steps
+## Philosophy: Create Proofs, Then Validate
 
-1. **CHECK**: Verify preconditions (lean/lake available)
-2. **VALIDATE**: Build and verify all proofs
-3. **GENERATE**: Run full build with diagnostics
-4. **REMEDIATE**: Find and fix `sorry` placeholders
+This is the EXECUTION phase. The plan phase designed theorems and lemmas. Now you:
+1. CREATE Lean 4 proof files from plan design
+2. VERIFY through `lake build`
+3. REMEDIATE `sorry` placeholders until zero remain
 
-## Commands (Tiered)
+## Constitutional Rules (Non-Negotiable)
 
-### Basic (Precondition Check)
+1. **CREATE First**: Generate all theorem/lemma files from plan
+2. **No Sorry Allowed**: Final code must have zero `sorry`
+3. **Proofs Must Build**: `lake build` must succeed
+4. **Complete Coverage**: All planned theorems implemented
+
+## Execution Workflow
+
+### Phase 1: CREATE Proof Artifacts (from plan)
+
 ```bash
-(command -v lake || command -v lean) >/dev/null || exit 11
-fd -g 'lakefile.lean' -e lean $PATH >/dev/null || exit 12
+# Create proof directory structure
+mkdir -p .outline/proofs/lean
+
+# Initialize Lake project (if not exists)
+cd .outline/proofs/lean
+test -f lakefile.lean || lake new ProjectProofs
 ```
 
-### Intermediate (Validation)
-```bash
-# Lake project
-test -f lakefile.lean && lake build || exit 13
+**Create Theorem Files (from plan design):**
+```lean
+-- .outline/proofs/lean/ProjectProofs/Basic.lean
+-- From plan: Theorem designs
 
-# Standalone files
-fd -e lean $PATH -x lean --make {} || exit 13
+namespace Project
+
+/-- From plan: Property description -/
+theorem theorem_name
+    (params : Types)
+    (hypotheses : Conditions) :
+    Conclusion := by
+  sorry  -- Initial placeholder, to be completed
+
+/-- From plan: Supporting lemma -/
+lemma lemma_name
+    (params : Types) :
+    Statement := by
+  sorry  -- Initial placeholder
+
+end Project
 ```
 
-### Advanced (Full Verification)
-```bash
-# Lake project with tests
-test -f lakefile.lean && lake test || exit 13
+### Phase 2: VERIFY Through Compilation
 
-# Check for sorry (incomplete proofs)
-rg -n '\bsorry\b' $PATH && exit 13 || exit 0
+```bash
+cd .outline/proofs/lean
+
+# Verify toolchain
+command -v lake >/dev/null || exit 11
+command -v lean >/dev/null || exit 11
+
+# Build proofs
+lake build || exit 13
+
+# Check for incomplete proofs
+SORRY_COUNT=$(rg '\bsorry\b' --type-add 'lean:*.lean' -t lean -c 2>/dev/null | awk -F: '{sum+=$2} END {print sum+0}')
+echo "Sorry count: $SORRY_COUNT"
 ```
 
-## Exit Codes
+### Phase 3: REMEDIATE Until Complete
 
-| Code | Meaning | Action |
-|------|---------|--------|
-| 0 | Success | All proofs verified |
-| 11 | Tool missing | Install Lean 4 / Lake |
-| 12 | No artifacts | Check path or create .lean files |
-| 13 | Proof incomplete | Replace `sorry` with explicit proofs |
-| 14 | Coverage gap | Add missing lemmas |
+**Replace each `sorry` with actual proof:**
+```lean
+-- Before (placeholder)
+theorem withdraw_preserves_balance
+    (balance : Nat) (amount : Nat)
+    (h_suff : amount <= balance) :
+    (balance - amount) >= 0 := by
+  sorry
 
-## Remediation Tips
+-- After (completed)
+theorem withdraw_preserves_balance
+    (balance : Nat) (amount : Nat)
+    (h_suff : amount <= balance) :
+    (balance - amount) >= 0 := by
+  omega
+```
 
-- Replace each `sorry` with explicit tactic or term proof
-- Use `set_option trace.tactic true` for debugging stuck proofs
-- Break complex goals into smaller lemmas
-- Leverage tactics: `simp`, `aesop`, `linarith`, `rw`, `exact`
-- Use `have` and `let` to introduce intermediate steps
-- Apply `rfl` for definitional equality
-- Use `constructor` for inductive proofs
+**Iterate until zero sorry:**
+```bash
+while [ "$SORRY_COUNT" -gt 0 ]; do
+  # Complete proofs using tactics
+  # Rebuild and recount
+  lake build || exit 13
+  SORRY_COUNT=$(rg '\bsorry\b' -t lean -c 2>/dev/null | awk -F: '{sum+=$2} END {print sum+0}')
+done
+```
 
-## Common Tactics
+## Common Tactics Reference
 
 | Tactic | Use Case |
 |--------|----------|
 | `simp` | Simplify with known lemmas |
+| `omega` | Linear arithmetic |
 | `aesop` | Automated proof search |
-| `linarith` | Linear arithmetic |
 | `rw [h]` | Rewrite using hypothesis |
 | `exact h` | Provide exact term |
 | `intro h` | Introduce hypothesis |
 | `cases h` | Case split |
 | `induction n` | Inductive proof |
+| `constructor` | Build inductive type |
+| `rfl` | Definitional equality |
 
-## Workflow
+## Validation Gates
 
-```
-CHECK (exit 11/12 on fail)
-  |
-  v
-VALIDATE (exit 13 on proof errors)
-  |
-  v
-GENERATE (full build)
-  |
-  v
-REMEDIATE (exit 13 if sorry found)
-  |
-  v
-SUCCESS (exit 0)
-```
+| Gate | Command | Pass Criteria | Blocking |
+|------|---------|---------------|----------|
+| Toolchain | `command -v lake` | Found | Yes |
+| Build | `lake build` | Success | Yes |
+| Sorry Count | `rg '\bsorry\b'` | Zero | Yes |
+| Tests | `lake test` | All pass | If present |
 
-Execute commands in order. Stop on first non-zero exit code and report.
+## Required Output
+
+1. **Created Artifacts**
+   - `.outline/proofs/lean/lakefile.lean`
+   - `.outline/proofs/lean/ProjectProofs/*.lean`
+
+2. **Verification Status**
+   - Build result: PASS/FAIL
+   - Sorry count: 0 (required)
+   - Theorems completed: [list]
+
+3. **Proof Summary**
+   - Main theorems proved
+   - Supporting lemmas
+   - Tactics used
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | All proofs verified, zero sorry |
+| 11 | lean/lake not found |
+| 12 | No .lean files created |
+| 13 | Build failed or proofs incomplete |
+| 14 | Coverage gaps (theorems missing) |
+
+Execute CREATE -> VERIFY -> REMEDIATE until all proofs complete.

@@ -1,149 +1,194 @@
 ---
-description: Execute TDD Red-Green-Refactor cycle
+description: Execute TDD: CREATE tests from plan, RED state, GREEN implementation, REFACTOR
 argument-hint: [LANG=<language>] [PATH=<directory>]
 ---
 
-You are executing Test-Driven Development using the Red-Green-Refactor cycle.
+You are executing Test-Driven Development using the Red-Green-Refactor cycle. Your mission: CREATE the tests designed in the plan phase, achieve RED (failing), then GREEN (passing), then REFACTOR.
 
 ## Arguments
 
 - `$LANG` - Programming language (optional, auto-detected if omitted)
-- `$PATH` - Directory path containing tests (required)
+- `$PATH` - Directory path for test artifacts (required)
 
-## Execution Steps
+## Philosophy: Create Tests First, Then Implement
 
-1. **RED**: Write a failing test
-2. **GREEN**: Implement minimal code to pass
-3. **REFACTOR**: Clean up while keeping tests green
+This is the EXECUTION phase. The plan phase designed test cases. Now you:
+1. CREATE test files from plan design (expect RED)
+2. Achieve GREEN through minimal implementation
+3. REFACTOR while keeping tests green
 
-## Commands by Language
+## Constitutional Rules (Non-Negotiable)
 
-### Rust
-```bash
-# Basic
-cargo test
+1. **CREATE Tests First**: Write all tests before implementation
+2. **RED Before GREEN**: Tests must fail initially (proves test works)
+3. **Minimal GREEN**: Only enough code to pass tests
+4. **REFACTOR Safely**: Tests stay green during cleanup
 
-# With coverage
-cargo test && cargo tarpaulin --out Lcov
+## Execution Workflow
 
-# Watch mode
-cargo watch -x test
+### Phase 1: CREATE Test Files (from plan)
+
+**Priority Order from Plan:**
+1. Error cases (Priority 1)
+2. Edge cases (Priority 2)
+3. Happy paths (Priority 3)
+4. Property tests (Priority 4)
+
+**Python Example:**
+```python
+# tests/test_account.py
+# From plan: Test designs
+
+import pytest
+from hypothesis import given, strategies as st
+
+class TestAccountFromPlan:
+    """Tests designed in plan phase"""
+
+    # Error Cases (Priority 1)
+    def test_withdraw_rejects_negative_amount(self):
+        """From plan: ERR-1"""
+        account = Account(balance=100)
+        with pytest.raises(ValueError, match="amount must be positive"):
+            account.withdraw(-50)
+
+    def test_withdraw_rejects_insufficient_balance(self):
+        """From plan: ERR-2"""
+        account = Account(balance=100)
+        with pytest.raises(ValueError, match="insufficient balance"):
+            account.withdraw(150)
+
+    # Edge Cases (Priority 2)
+    def test_withdraw_handles_exact_balance(self):
+        """From plan: EDGE-1"""
+        account = Account(balance=100)
+        result = account.withdraw(100)
+        assert result == 100
+        assert account.balance == 0
+
+    def test_withdraw_handles_minimum_amount(self):
+        """From plan: EDGE-2"""
+        account = Account(balance=100)
+        result = account.withdraw(1)
+        assert result == 1
+
+    # Happy Paths (Priority 3)
+    def test_withdraw_returns_amount(self):
+        """From plan: HAPPY-1"""
+        account = Account(balance=100)
+        result = account.withdraw(30)
+        assert result == 30
+
+    # Property Tests (Priority 4)
+    @given(st.integers(min_value=0, max_value=10000),
+           st.integers(min_value=1, max_value=100))
+    def test_balance_never_negative(self, initial, amount):
+        """From plan: PROP-1"""
+        from hypothesis import assume
+        assume(amount <= initial)
+        account = Account(balance=initial)
+        account.withdraw(amount)
+        assert account.balance >= 0
 ```
 
-### Python
+### Phase 2: Achieve RED State
+
 ```bash
-# Basic
-pytest
+# Run tests - expect failures
+pytest tests/ -v
 
-# With coverage
-pytest --cov=. --cov-report=term
-
-# Watch mode
-pytest-watch
+# Verify tests actually fail (RED state confirmed)
+pytest tests/ && echo "ERROR: Tests should fail!" && exit 13
+echo "RED state achieved - tests fail as expected"
 ```
 
-### TypeScript
-```bash
-# Basic
-vitest run
+### Phase 3: Achieve GREEN State
 
-# With coverage
-vitest --coverage
+**Implement minimal code to pass tests:**
+```python
+# src/account.py
+# Minimal implementation to pass tests
 
-# Watch mode
-vitest --watch
+class Account:
+    def __init__(self, balance: int):
+        self.balance = balance
+
+    def withdraw(self, amount: int) -> int:
+        # From ERR-1
+        if amount <= 0:
+            raise ValueError("amount must be positive")
+        # From ERR-2
+        if amount > self.balance:
+            raise ValueError("insufficient balance")
+
+        self.balance -= amount
+        return amount
 ```
 
-### Go
 ```bash
-# Basic
-go test ./...
-
-# With coverage
-go test -v -cover ./...
-
-# Watch mode
-gotestsum --watch
+# Run tests - expect all pass
+pytest tests/ -v || exit 14
+echo "GREEN state achieved - all tests pass"
 ```
 
-### Java
+### Phase 4: REFACTOR
+
 ```bash
-# Basic
-mvn test
-
-# Specific test
-mvn test -Dtest=TestClass#method
-
-# With mutation testing
-mvn verify pitest:mutationCoverage
+# Clean up code while keeping tests green
+# After each refactor:
+pytest tests/ || exit 15
+echo "REFACTOR complete - tests still green"
 ```
 
-### C#
-```bash
-# Basic
-dotnet test
+## Test Framework Commands
 
-# With coverage
-dotnet test --collect:"XPlat Code Coverage"
+| Language | Run Tests | Watch Mode | Coverage |
+|----------|-----------|------------|----------|
+| Python | `pytest` | `pytest-watch` | `pytest --cov` |
+| Rust | `cargo test` | `cargo watch -x test` | `cargo tarpaulin` |
+| TypeScript | `vitest run` | `vitest --watch` | `vitest --coverage` |
+| Go | `go test ./...` | `gotestsum --watch` | `go test -cover` |
+| Java | `mvn test` | - | `mvn jacoco:report` |
+| Kotlin | `./gradlew test` | `./gradlew -t test` | `./gradlew jacocoTestReport` |
 
-# Watch mode
-dotnet watch test
-```
+## Validation Gates
 
-### C++
-```bash
-# Basic
-ctest
+| Gate | Command | Pass Criteria | Blocking |
+|------|---------|---------------|----------|
+| Framework | Detect test framework | Found | Yes |
+| RED | Initial test run | Tests fail | Yes |
+| GREEN | Post-implementation | Tests pass | Yes |
+| REFACTOR | Post-cleanup | Tests still pass | Yes |
+| Coverage | Coverage report | >= 80% | No |
 
-# Verbose
-ctest --verbose --output-on-failure
+## Required Output
 
-# Repeat for flaky detection
-ctest --repeat until-fail:10 --parallel 4
-```
+1. **Created Test Files**
+   - `tests/test_[module].py` or equivalent
+   - Error case tests
+   - Edge case tests
+   - Happy path tests
+   - Property tests
+
+2. **TDD Cycle Report**
+   - RED: [X] tests failing
+   - GREEN: All tests passing
+   - REFACTOR: Code cleaned up
+
+3. **Coverage Summary**
+   - Lines covered
+   - Branch coverage
+   - Uncovered areas
 
 ## Exit Codes
 
-| Code | Meaning | Action |
-|------|---------|--------|
-| 0 | Tests pass | Proceed to next feature |
-| 11 | No framework | Install test framework |
-| 12 | Compile error | Fix syntax |
-| 13 | Wrong failure | Refine test expectations |
-| 14 | Test fails | Fix implementation |
-| 15 | Regression | Revert, refactor carefully |
+| Code | Meaning |
+|------|---------|
+| 0 | TDD cycle complete, all tests pass |
+| 11 | No test framework detected |
+| 12 | Test compilation failed |
+| 13 | Tests not failing (RED state not achieved) |
+| 14 | Tests fail after implementation (GREEN not achieved) |
+| 15 | Tests fail after refactor (regression) |
 
-## Best Practices
-
-### Test Naming
-- Rust: `test_<feature>_<condition>_<expected>`
-- Python: `test_<feature>_when_<condition>_then_<expected>`
-- TypeScript: `'should <expected> when <condition>'`
-- Go: `Test<Feature><Condition>`
-
-### AAA Pattern
-```
-ARRANGE: Set up test data
-ACT: Execute the function
-ASSERT: Verify the result
-```
-
-### One Assertion Per Test
-Keep tests focused on single behaviors.
-
-## Workflow
-
-```
-RED (write failing test)
-  |
-  v
-GREEN (minimal implementation)
-  |
-  v
-REFACTOR (clean code, tests stay green)
-  |
-  v
-REPEAT
-```
-
-Execute the cycle. Report test results and coverage metrics.
+Execute CREATE -> RED -> GREEN -> REFACTOR cycle.
