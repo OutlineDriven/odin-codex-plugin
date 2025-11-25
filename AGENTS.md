@@ -74,6 +74,28 @@ Default to research over action. Do not jump into implementation unless clearly 
 - Choose straightforward flows; defer abstractions until repeated need is proven.
 </keep_it_simple>
 
+<workspace_organization>
+**Temporal Directory Convention:** ALL temporal working artifacts MUST use `.outline/` directory (workspace-relative).
+
+**Required structure:**
+- `.outline/proofs/` - Idris2, Lean4 formal proofs
+- `.outline/specs/` - Quint, Verus specifications
+- `.outline/contracts/` - Design-by-contract artifacts (Prusti, SPARK, Dafny)
+- `.outline/diagrams/` - Architecture, data-flow, concurrency, memory, optimization diagrams
+- `.outline/plans/` - Design documents, implementation plans
+- `.outline/mockups/` - UI/UX mockups, prototypes
+- `.outline/scratch/` - Temporary analysis, notes, working files
+
+**Rules:**
+- NEVER create temporal files in project root or source directories
+- ALWAYS prefix temporal paths with `.outline/`
+- Create `.outline/` subdirectory on first use
+- Clean up `.outline/scratch/` after task completion
+- Persist verification artifacts: `.outline/proofs/`, `.outline/specs/`, `.outline/contracts/`
+
+**Rationale:** Isolates generated artifacts from source code, prevents pollution of project structure, enables easy cleanup, maintains clear separation between human-authored and agent-generated content.
+</workspace_organization>
+
 <git_commit_strategy>
 **Atomic Commit Protocol:** One logical change = One commit. Each type-classified, independently testable, reversible.
 
@@ -346,11 +368,17 @@ Don't hold back. Give it your all.
 **IMPLEMENTATION BLOCKED UNTIL ALL ITEMS CHECKED!** Cannot proceed until every checkbox marked. Prevents starting with incomplete design.
 </design_validation>
 
-## Critical Implementation Guidelines
+<diagram_design_mandates>
+**Non-negotiable:** DIAGRAMS NON-NEGOTIABLE. No implementation without proper diagrams.
 
-**Core Principles:** Execute with surgical precision—no more, no less | Minimize file creation; delete temp files immediately | Prefer modifying existing files | MANDATORY: thoroughly analyze before editing | REQUIRED: use ast-grep (highly preferred) or Edit suite for ALL code ops | DIVIDE AND CONQUER: split into smaller tasks; allocate to multiple agents when independent | ENFORCEMENT: utilize parallel agents aggressively but responsibly | THOROUGHNESS: be exhaustive in analysis/implementation
+**Required for:** Concurrency (thread interaction, sync), Memory (ownership, lifetimes, allocation), Architecture (components, interfaces, data flow), Performance (bottlenecks, targets, budgets)
 
-**Visual Design Requirements [ULTRA CRITICAL]:** DIAGRAMS NON-NEGOTIABLE | Required for: Concurrency, Memory, Architecture, Performance | NO IMPLEMENTATION WITHOUT DIAGRAMS—ZERO EXCEPTIONS | IMPLEMENTATIONS WITHOUT DIAGRAMS REJECTED
+**Absolute prohibition:** NO IMPLEMENTATION WITHOUT DIAGRAMS—ZERO EXCEPTIONS
+
+**Consequences:** IMPLEMENTATIONS WITHOUT DIAGRAMS REJECTED
+
+Hard requirement. Diagrams foundational to correct implementation.
+</diagram_design_mandates>
 
 <decision_heuristics>
 **Research vs. Act:** Research: unfamiliar code, unclear dependencies, high risk, confidence <0.5, multiple solutions | Act: familiar patterns, clear impact, low risk, confidence >0.7, single solution
@@ -367,6 +395,12 @@ Don't hold back. Give it your all.
 
 **Core Principles:** Confidence-driven, Evidence-based, Risk-aware, Progressive, Adaptive, Systematic, Context-aware, Resilient, Thorough, Pragmatic
 </decision_heuristics>
+
+## Critical Implementation Guidelines
+
+**Core Principles:** Execute with surgical precision—no more, no less | Minimize file creation; delete temp files immediately | Prefer modifying existing files | MANDATORY: thoroughly analyze before editing | REQUIRED: use ast-grep (highly preferred) or Edit suite for ALL code ops | DIVIDE AND CONQUER: split into smaller tasks; allocate to multiple agents when independent | ENFORCEMENT: utilize parallel agents aggressively but responsibly | THOROUGHNESS: be exhaustive in analysis/implementation
+
+**Visual Design Requirements [ULTRA CRITICAL]:** DIAGRAMS NON-NEGOTIABLE | Required for: Concurrency, Memory, Architecture, Performance | NO IMPLEMENTATION WITHOUT DIAGRAMS—ZERO EXCEPTIONS | IMPLEMENTATIONS WITHOUT DIAGRAMS REJECTED
 
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.

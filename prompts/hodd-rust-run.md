@@ -84,19 +84,19 @@ rg 'loom::' -q -t rust && {
 ### External Tools (Optional)
 ```bash
 # Idris2
-fd -e idr proofs/ 2>/dev/null | head -1 | grep -q . && {
-  idris2 --check proofs/*.idr || exit 16
+fd -e idr .outline/proofs/ 2>/dev/null | head -1 | grep -q . && {
+  idris2 --check .outline/proofs/*.idr || exit 16
 }
 
 # Lean4
-fd lakefile.lean proofs/ 2>/dev/null | head -1 | grep -q . && {
+fd lakefile.lean .outline/proofs/ 2>/dev/null | head -1 | grep -q . && {
   (cd proofs && lake build) || exit 16
-  rg 'sorry' proofs/*.lean && exit 16
+  rg 'sorry' .outline/proofs/*.lean && exit 16
 }
 
 # Quint
-fd -e qnt specs/ 2>/dev/null | head -1 | grep -q . && {
-  quint typecheck specs/*.qnt && quint verify specs/*.qnt || exit 16
+fd -e qnt .outline/specs/ 2>/dev/null | head -1 | grep -q . && {
+  quint typecheck .outline/specs/*.qnt && quint verify .outline/specs/*.qnt || exit 16
 }
 
 # Verus
