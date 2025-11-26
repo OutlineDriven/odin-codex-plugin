@@ -8,7 +8,7 @@ You are executing the HODD-RUST validation pipeline. Your mission: CREATE the Ru
 
 This is the EXECUTION phase. The plan phase designed the Rust verification strategy. Now you:
 1. CREATE Prusti contracts, Kani proofs, and Loom verifications
-2. VERIFY through the tiered pipeline
+2. VERIFY through the validation pipeline
 3. REMEDIATE failures through iterative fixes
 4. INTEGRATE external proofs if designed
 
@@ -33,13 +33,13 @@ Tier | Tool        | Creates              | Validates
 
 1. **VALIDATION-FIRST COMPLIANCE**: Execute validation-first at every step
 2. **CREATE Before Code**: Verification artifacts MUST exist before implementation
-3. **Tier Order**: Execute tiers in sequence (0 -> 6)
+3. **Execution Order**: Execute stages in sequence (0 -> 6)
 4. **Fail-Fast**: Stop on blocking failures; no skipping
 5. **Complete Remediation**: Fix all issues; never skip verification
 
 ## Execution Workflow
 
-### Phase 1: CREATE Tier 0 - Baseline Setup
+### Phase 1: CREATE Basic - Baseline Setup
 
 ```bash
 cd PATH
@@ -59,7 +59,7 @@ cargo audit 2>/dev/null || echo "cargo-audit not installed"
 cargo deny check 2>/dev/null || echo "cargo-deny not installed"
 ```
 
-### Phase 2: CREATE Tier 4 - Prusti Contracts (from plan)
+### Phase 2: CREATE Contracts - Prusti Contracts (from plan)
 
 ```rust
 // src/account.rs
@@ -98,12 +98,12 @@ impl Account {
 ```bash
 if rg '#\[(requires|ensures|invariant)\]' -q -t rust; then
     echo "Prusti annotations detected"
-    cargo prusti || exit 15
+    prusti || exit 15
     echo "Prusti verification passed"
 fi
 ```
 
-### Phase 3: CREATE Tier 5 - Kani Proofs (from plan)
+### Phase 3: CREATE Proofs - Kani Proofs (from plan)
 
 ```rust
 // tests/kani_proofs.rs
@@ -151,12 +151,12 @@ mod kani_proofs {
 ```bash
 if rg '#\[kani::proof\]' -q -t rust; then
     echo "Kani proofs detected"
-    cargo kani || exit 15
+    kani || exit 15
     echo "Kani verification passed"
 fi
 ```
 
-### Phase 4: CREATE Tier 2 - Loom Verification (from plan)
+### Phase 4: CREATE Concurrency - Loom Verification (from plan)
 
 ```rust
 // verifications/loom_verify.rs
@@ -205,7 +205,7 @@ if rg 'loom::' -q -t rust; then
 fi
 ```
 
-### Phase 5: CREATE Tier 6 - External Proofs (from plan, optional)
+### Phase 5: CREATE External - External Proofs (from plan, optional)
 
 ```bash
 # Create external proof directories if designed
@@ -233,32 +233,32 @@ set -e
 
 echo "=== HODD-RUST VALIDATION PIPELINE ==="
 
-echo "[Tier 0] Baseline..."
+echo "[Basic] Baseline..."
 cargo fmt --check || exit 12
 cargo clippy -- -D warnings || exit 13
 cargo audit 2>/dev/null || echo "SKIP: cargo-audit"
 
-echo "[Tier 4] Prusti contracts..."
+echo "[Contracts] Prusti contracts..."
 if rg '#\[(requires|ensures|invariant)\]' -q -t rust; then
-    cargo prusti || exit 15
+    prusti || exit 15
 fi
 
-echo "[Tier 5] Kani proofs..."
+echo "[Proofs] Kani proofs..."
 if rg '#\[kani::proof\]' -q -t rust; then
-    cargo kani || exit 15
+    kani || exit 15
 fi
 
-echo "[Tier 2] Loom concurrency..."
+echo "[Concurrency] Loom concurrency..."
 if rg 'loom::' -q -t rust; then
     RUSTFLAGS='--cfg loom' cargo build --release || exit 15
 fi
 
-echo "[Tier 1] Miri (advisory)..."
+echo "[Miri] Miri (advisory)..."
 if rg 'unsafe\s*\{' -q -t rust; then
     echo "ADVISORY: Run 'cargo +nightly miri test' locally for UB detection"
 fi
 
-echo "[Tier 6] External proofs..."
+echo "[External] External proofs..."
 if [ -d ".outline/proofs/lean" ] && [ -f ".outline/proofs/lean/lakefile.lean" ]; then
     cd .outline/proofs/lean && lake build && cd ../../..
 fi
@@ -268,12 +268,12 @@ echo "=== HODD-RUST VALIDATION COMPLETE ==="
 
 ## Validation Gates
 
-| Gate | Tier | Command | Pass Criteria | Blocking |
+| Gate | Category | Command | Pass Criteria | Blocking |
 |------|------|---------|---------------|----------|
 | Format | 0 | `cargo fmt --check` | Clean | Yes |
 | Clippy | 0 | `cargo clippy` | No warnings | Yes |
-| Prusti | 4 | `cargo prusti` | Verified | Yes* |
-| Kani | 5 | `cargo kani` | No violations | Yes* |
+| Prusti | 4 | `prusti` | Verified | Yes* |
+| Kani | 5 | `kani` | No violations | Yes* |
 | Loom | 2 | `cargo build --cfg loom` | No races | Yes* |
 | Miri | 1 | `cargo miri setup` | Ready | No (local) |
 | External | 6 | `lake build` | No sorry | Yes* |
@@ -286,7 +286,7 @@ echo "=== HODD-RUST VALIDATION COMPLETE ==="
 2. **Kani Proofs** - Proof harnesses from plan
 3. **Loom Verifications** - Concurrency verifications if applicable
 4. **External Proofs** - If designed in plan
-5. **Pipeline Report** - All tiers status
+5. **Pipeline Report** - All stages status
 
 ## Exit Codes
 
@@ -300,7 +300,7 @@ echo "=== HODD-RUST VALIDATION COMPLETE ==="
 | 15 | Formal verification failed |
 | 16 | External proofs failed |
 
-Execute CREATE for each tier -> VERIFY through pipeline -> REMEDIATE failures.
+Execute CREATE for each stage -> VERIFY through pipeline -> REMEDIATE failures.
 
 
 

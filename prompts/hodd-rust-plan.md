@@ -47,7 +47,7 @@ Tier | Tool        | Catches              | When to Use
 
 ### Phase 2: Design Verification Artifacts
 
-1. **Tier 4 - Prusti Contracts**
+1. **Contracts - Prusti Contracts**
    ```rust
    // Design from requirement: [REQ-ID]
    #[requires(amount > 0)]
@@ -56,7 +56,7 @@ Tier | Tool        | Catches              | When to Use
    fn withdraw(&mut self, amount: u64) -> u64
    ```
 
-2. **Tier 5 - Kani Proofs**
+2. **Proofs - Kani Proofs**
    ```rust
    // Design from requirement: [REQ-ID]
    #[cfg(kani)]
@@ -67,7 +67,7 @@ Tier | Tool        | Catches              | When to Use
    }
    ```
 
-3. **Tier 2 - Loom Verification**
+3. **Concurrency - Loom Verification**
    ```rust
    // Design from requirement: [REQ-ID] - Thread safety
    #[cfg(loom)]
@@ -146,21 +146,21 @@ If requirements exceed Rust-native verification:
 ### 2. Verification Design by Tier
 
 ```markdown
-## Tier 4: Prusti Contracts
+## Contracts: Prusti Contracts
 
 ### Contracts to Add
 | Function | Preconditions | Postconditions | Invariants |
 |----------|---------------|----------------|------------|
 | `func_1` | PRE-1, PRE-2 | POST-1 | INV-1 |
 
-## Tier 5: Kani Proofs
+## Proofs: Kani Proofs
 
 ### Proofs to Create
 | Proof | Target | Property | Bounds |
 |-------|--------|----------|--------|
 | `verify_x` | `func_1` | Correctness | unwind(10) |
 
-## Tier 2: Loom Verification
+## Concurrency: Loom Verification
 
 ### Concurrency Verifications
 | Verification | Target | Scenario |
@@ -173,7 +173,7 @@ If requirements exceed Rust-native verification:
 ```markdown
 ## Critical Files for Verification
 
-| File | Tier | Tool | Rationale |
+| File | Category | Tool | Rationale |
 |------|------|------|-----------|
 | `src/core.rs` | 4, 5 | Prusti, Kani | Core logic |
 | `src/sync.rs` | 2 | Loom | Concurrency |
@@ -190,12 +190,12 @@ src/
 └── core.rs          # Prusti annotations inline
 
 verifications/
-├── kani_proofs.rs   # Tier 5: Kani proofs
-└── loom_verify.rs   # Tier 2: Loom verifications
+├── kani_proofs.rs   # Proofs: Kani proofs
+└── loom_verify.rs   # Concurrency: Loom verifications
 
 .outline/
-├── proofs/lean/     # Tier 6: External proofs (if needed)
-└── specs/           # Tier 6: Quint specs (if needed)
+├── proofs/lean/     # External: External proofs (if needed)
+└── specs/           # External: Quint specs (if needed)
 ```
 
 ### 5. Validation Pipeline
@@ -203,12 +203,12 @@ verifications/
 ```markdown
 ## Execution Order (for run phase)
 
-1. `cargo fmt --check` - Tier 0
-2. `cargo clippy -- -D warnings` - Tier 0
-3. `cargo prusti` - Tier 4 (if annotations present)
-4. `cargo kani` - Tier 5 (if proofs present)
-5. `RUSTFLAGS='--cfg loom' cargo build` - Tier 2 (if loom verifications)
-6. External proofs - Tier 6 (if present)
+1. `cargo fmt --check` - Basic
+2. `cargo clippy -- -D warnings` - Basic
+3. `prusti` - Contracts (if annotations present)
+4. `kani` - Proofs (if proofs present)
+5. `RUSTFLAGS='--cfg loom' cargo build` - Concurrency (if loom verifications)
+6. External proofs - External (if present)
 ```
 
 Design Rust verifications FROM REQUIREMENTS. Do NOT write files.
