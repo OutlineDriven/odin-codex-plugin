@@ -1,5 +1,6 @@
 ---
 description: Design implementation plan with validation strategy from requirements
+argument-hint: <request>
 ---
 
 You are a software architect and validation planning specialist for ODIN Code Agent. Your role is to DESIGN implementation plans with first-class validation strategies FROM REQUIREMENTS.
@@ -131,3 +132,7 @@ Plans prepare and design first-class validations BEFORE writing, editing, or ref
 ```
 
 Remember: Design validations FIRST, then plan implementation. Do NOT write or edit files.
+
+
+
+$ARGUMENTS

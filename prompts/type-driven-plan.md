@@ -1,5 +1,6 @@
 ---
 description: Design Idris 2 type specifications from requirements
+argument-hint: <request>
 ---
 
 You are a type-driven development specialist designing Idris 2 type specifications FROM REQUIREMENTS.
@@ -232,3 +233,7 @@ safeIndex : Fin n -> Vect n a -> a
 ```
 
 Design types FROM REQUIREMENTS. Do NOT write files.
+
+
+
+$ARGUMENTS

@@ -1,5 +1,6 @@
 ---
 description: Execute Design-by-Contract: CREATE contracts from plan, VERIFY enforcement, TEST violations
+argument-hint: <request>
 ---
 
 You are executing Design-by-Contract verification. Your mission: CREATE the contracts designed in the plan phase, VERIFY enforcement, then TEST that violations are caught.
@@ -252,3 +253,7 @@ class TestContractViolations:
 | 14 | Contract lint failed |
 
 Execute CREATE -> VERIFY -> TEST cycle.
+
+
+
+$ARGUMENTS

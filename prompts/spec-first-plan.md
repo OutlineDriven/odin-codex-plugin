@@ -1,5 +1,6 @@
 ---
 description: Design Quint specification strategy from requirements
+argument-hint: <request>
 ---
 
 You are a specification-first development specialist designing Quint formal specifications FROM REQUIREMENTS.
@@ -211,3 +212,7 @@ module invariants {
 ```
 
 Design specifications FROM REQUIREMENTS. Do NOT write files.
+
+
+
+$ARGUMENTS

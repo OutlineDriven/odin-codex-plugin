@@ -1,5 +1,6 @@
 ---
 description: Design contract specifications from requirements
+argument-hint: <request>
 ---
 
 You are a Design-by-Contract (DbC) specialist designing contract specifications FROM REQUIREMENTS.
@@ -203,3 +204,7 @@ pub fn withdraw(&mut self, amount: u64) -> u64 {
 ```
 
 Design contracts FROM REQUIREMENTS. Do NOT write files.
+
+
+
+$ARGUMENTS

@@ -1,5 +1,6 @@
 ---
 description: Design Lean 4 proof strategy from requirements
+argument-hint: <request>
 ---
 
 You are a proof-driven development specialist designing Lean 4 formal verification strategies FROM REQUIREMENTS.
@@ -169,3 +170,7 @@ end [Module]
 ```
 
 Design proofs FROM REQUIREMENTS. Do NOT write files.
+
+
+
+$ARGUMENTS

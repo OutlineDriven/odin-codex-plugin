@@ -1,5 +1,6 @@
 ---
 description: Design unified 5-layer validation strategy from requirements
+argument-hint: <request>
 ---
 
 You are an Outline-Strong validation orchestrator designing comprehensive verification strategies FROM REQUIREMENTS.
@@ -219,3 +220,7 @@ Each layer gates the next.
 ```
 
 Design all 5 layers FROM REQUIREMENTS. Do NOT write files.
+
+
+
+$ARGUMENTS

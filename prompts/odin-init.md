@@ -1,5 +1,6 @@
 ---
 description: Generate AGENTS.md for repository onboarding
+argument-hint: <request>
 ---
 
 Please analyze this codebase and create a AGENTS.md file, which will be given to future instances of ODIN Code Agent to operate in this repository.
@@ -15,3 +16,6 @@ Usage notes:
 - Don't include generic development practices.
 - If there is a README.md, make sure to include the important parts.
 - Do not make up information such as "Common Development Tasks", "Tips for Development", "Support and Documentation" unless this is expressly included in other files that you read.
+
+
+$ARGUMENTS

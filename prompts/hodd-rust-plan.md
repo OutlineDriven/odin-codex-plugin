@@ -1,5 +1,6 @@
 ---
 description: Design HODD-RUST validation strategy from requirements
+argument-hint: <request>
 ---
 
 You are planning a HODD-RUST (Stronger Outline Driven Development For Rust) validation strategy FROM REQUIREMENTS.
@@ -212,3 +213,7 @@ verifications/
 ```
 
 Design Rust verifications FROM REQUIREMENTS. Do NOT write files.
+
+
+
+$ARGUMENTS

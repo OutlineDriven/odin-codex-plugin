@@ -1,5 +1,6 @@
 ---
 description: Execute unified validation: CREATE all 5 layers from plan, VERIFY each layer, INTEGRATE
+argument-hint: <request>
 ---
 
 You are executing OUTLINE-STRONG DEVELOPMENT - unified validation-first methodology. Your mission: CREATE validation artifacts for all five layers designed in the plan phase, VERIFY each layer passes, then INTEGRATE into cohesive implementation.
@@ -265,3 +266,7 @@ echo "=== ALL 5 LAYERS VERIFIED ==="
 | 16 | Correspondence incomplete |
 
 Execute CREATE for each layer -> VERIFY each layer -> INTEGRATE with correspondence validation.
+
+
+
+$ARGUMENTS

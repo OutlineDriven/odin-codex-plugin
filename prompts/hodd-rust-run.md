@@ -1,5 +1,6 @@
 ---
 description: Execute HODD-RUST validation: CREATE Rust-specific verifications from plan, VERIFY through pipeline, REMEDIATE
+argument-hint: <request>
 ---
 
 You are executing the HODD-RUST validation pipeline. Your mission: CREATE the Rust-specific verification artifacts designed in the plan phase, VERIFY through the complete pipeline, then REMEDIATE any issues.
@@ -301,3 +302,7 @@ echo "=== HODD-RUST VALIDATION COMPLETE ==="
 | 16 | External proofs failed |
 
 Execute CREATE for each tier -> VERIFY through pipeline -> REMEDIATE failures.
+
+
+
+$ARGUMENTS

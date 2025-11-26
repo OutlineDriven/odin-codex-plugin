@@ -1,5 +1,6 @@
 ---
 description: Interactive prompt optimization workflow for LLMs
+argument-hint: <request>
 ---
 
 # Interactive Prompt Optimization Workflow
@@ -161,3 +162,6 @@ Package your work for deployment or handoff:
 - Scenarios where prompt may still struggle
 - Recommended fallback approaches
 - Future improvement opportunities
+
+
+$ARGUMENTS

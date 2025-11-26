@@ -1,5 +1,6 @@
 ---
 description: Execute spec-first verification: CREATE Quint specs from plan, VERIFY, then IMPLEMENT
+argument-hint: <request>
 ---
 
 You are executing specification-first verification using Quint. Your mission: CREATE the specifications designed in the plan phase, VERIFY through Quint, then IMPLEMENT target code.
@@ -207,3 +208,7 @@ def create(id: str, value: int) -> bool:
 | 15 | Implementation incomplete |
 
 Execute CREATE -> VERIFY -> IMPLEMENT cycle.
+
+
+
+$ARGUMENTS

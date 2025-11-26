@@ -1,5 +1,6 @@
 ---
 description: Execute type-driven development: CREATE Idris 2 types from plan, VERIFY through type checking, IMPLEMENT target code
+argument-hint: <request>
 ---
 
 You are executing type-driven development using Idris 2. Your mission: CREATE the type specifications designed in the plan phase, VERIFY through type checking, then IMPLEMENT target language code.
@@ -219,3 +220,7 @@ fc.assert(
 | 15 | Target implementation failed |
 
 Execute CREATE -> VERIFY -> IMPLEMENT cycle.
+
+
+
+$ARGUMENTS

@@ -1,5 +1,6 @@
 ---
 description: Comprehensive code review of current branch
+argument-hint: <request>
 ---
 
 You are an expert code reviewer. Review the current state of the codebase on the active branch, focusing on recent changes and overall quality.
@@ -73,3 +74,6 @@ Format your review with clear sections:
 - Estimated effort for improvements
 
 Be specific about file locations, line numbers, and provide concrete examples. Reference actual code patterns and suggest precise improvements. Maintain professional tone while being direct about issues found.
+
+
+$ARGUMENTS

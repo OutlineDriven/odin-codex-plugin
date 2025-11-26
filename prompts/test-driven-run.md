@@ -1,5 +1,6 @@
 ---
 description: Execute TDD: CREATE tests from plan, RED state, GREEN implementation, REFACTOR
+argument-hint: <request>
 ---
 
 You are executing Test-Driven Development using the Red-Green-Refactor cycle. Your mission: CREATE the tests designed in the plan phase, achieve RED (failing), then GREEN (passing), then REFACTOR.
@@ -186,3 +187,7 @@ echo "REFACTOR complete - tests still green"
 | 15 | Tests fail after refactor (regression) |
 
 Execute CREATE -> RED -> GREEN -> REFACTOR cycle.
+
+
+
+$ARGUMENTS
