@@ -83,9 +83,9 @@ Tier | Tool        | Catches              | When to Use
 **If NO existing Rust verification artifacts:**
 ```bash
 # Check for existing verifications
-rg '#\[requires|#\[ensures|#\[invariant' -t rust $PATH  # Prusti
-rg '#\[kani::proof\]' -t rust $PATH                      # Kani
-rg 'loom::' -t rust $PATH                                # Loom
+rg '#\[requires|#\[ensures|#\[invariant' -t rust PATH  # Prusti
+rg '#\[kani::proof\]' -t rust PATH                      # Kani
+rg 'loom::' -t rust PATH                                # Loom
 ```
 
 Design complete verification suite:

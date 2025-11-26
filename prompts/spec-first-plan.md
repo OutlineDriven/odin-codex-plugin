@@ -63,7 +63,7 @@ Plan state machines, invariants, and temporal properties FROM REQUIREMENTS befor
 **If NO existing Quint artifacts:**
 ```bash
 # Check for existing specs
-fd -e qnt $PATH
+fd -e qnt PATH
 ```
 
 Design complete specification suite:

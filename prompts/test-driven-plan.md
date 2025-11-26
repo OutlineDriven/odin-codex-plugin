@@ -57,8 +57,8 @@ Plan what tests to write, what properties to verify, and what behaviors to valid
 **If NO existing tests:**
 ```bash
 # Detect language and check for tests
-fd -e rs -e py -e ts -e go -e java $PATH
-fd -g '*test*' $PATH
+fd -e rs -e py -e ts -e go -e java PATH
+fd -g '*test*' PATH
 ```
 
 Design complete test suite:

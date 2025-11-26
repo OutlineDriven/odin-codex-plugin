@@ -61,7 +61,7 @@ Plan preconditions, postconditions, and invariants FROM REQUIREMENTS before any 
 **If NO existing contracts:**
 ```bash
 # Check for contract annotations
-rg '@deal|#\[requires|z\.object|require\(|checkArgument' --type-add 'all:*' $PATH
+rg '@deal|#\[requires|z\.object|require\(|checkArgument' --type-add 'all:*' PATH
 ```
 
 Design complete contract suite:

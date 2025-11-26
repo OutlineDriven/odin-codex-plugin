@@ -70,9 +70,9 @@ Layer 5 (Test):    def test_balance_invariant(): assert acc.balance >= 0
 **If NO existing validation artifacts:**
 ```bash
 # Check all artifact types
-fd -e lean -e qnt -e idr $PATH
-rg '@deal|#\[requires|z\.object' $PATH
-fd -g '*test*' $PATH
+fd -e lean -e qnt -e idr PATH
+rg '@deal|#\[requires|z\.object' PATH
+fd -g '*test*' PATH
 ```
 
 Design complete 5-layer validation:

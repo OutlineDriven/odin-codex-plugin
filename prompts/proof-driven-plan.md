@@ -59,8 +59,8 @@ Plan what theorems to prove, what lemmas to establish, and what properties to ve
 **If NO existing Lean artifacts:**
 ```bash
 # Check for existing proofs
-fd -e lean $PATH
-fd lakefile.lean $PATH
+fd -e lean PATH
+fd lakefile.lean PATH
 ```
 
 Design complete proof suite:

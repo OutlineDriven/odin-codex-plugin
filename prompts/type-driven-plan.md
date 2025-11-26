@@ -60,7 +60,7 @@ Plan dependent types, refined types, and proof-carrying types FROM REQUIREMENTS 
 **If NO existing Idris artifacts:**
 ```bash
 # Check for existing types
-fd -e idr -e ipkg $PATH
+fd -e idr -e ipkg PATH
 ```
 
 Design complete type suite:

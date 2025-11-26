@@ -42,7 +42,7 @@ Tier | Tool        | Creates              | Validates
 ### Phase 1: CREATE Tier 0 - Baseline Setup
 
 ```bash
-cd $PATH
+cd PATH
 
 # Verify toolchain
 rustc --version || exit 11
