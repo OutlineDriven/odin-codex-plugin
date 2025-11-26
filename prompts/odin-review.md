@@ -1,11 +1,6 @@
 ---
 description: Comprehensive code review of current branch
-argument-hint: [BRANCH=<branch_name>]
 ---
-
-## Arguments
-
-- `$BRANCH` - Branch name to review (optional, defaults to current active branch)
 
 You are an expert code reviewer. Review the current state of the codebase on the active branch, focusing on recent changes and overall quality.
 

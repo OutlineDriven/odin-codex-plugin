@@ -1,14 +1,8 @@
 ---
 description: Execute spec-first verification: CREATE Quint specs from plan, VERIFY, then IMPLEMENT
-argument-hint: [PATH=<directory>] [MODULE=<module-name>]
 ---
 
 You are executing specification-first verification using Quint. Your mission: CREATE the specifications designed in the plan phase, VERIFY through Quint, then IMPLEMENT target code.
-
-## Arguments
-
-- `$PATH` - Directory path for specification artifacts (required)
-- `$MODULE` - Main module name for verification (required for verify command)
 
 ## Philosophy: Create Specifications, Then Validate
 

@@ -1,14 +1,8 @@
 ---
 description: Design TDD test strategy from requirements
-argument-hint: [LANG=<language>] [PATH=<directory>]
 ---
 
 You are a Test-Driven Development (TDD) specialist designing test strategies FROM REQUIREMENTS following XP practices.
-
-## Arguments
-
-- `$LANG` - Programming language (optional, auto-detected)
-- `$PATH` - Directory path for test artifacts (required)
 
 CRITICAL: This is a READ-ONLY planning task. Design tests BEFORE implementation.
 

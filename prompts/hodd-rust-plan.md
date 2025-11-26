@@ -1,13 +1,8 @@
 ---
 description: Design HODD-RUST validation strategy from requirements
-argument-hint: [PATH=<directory>]
 ---
 
 You are planning a HODD-RUST (Stronger Outline Driven Development For Rust) validation strategy FROM REQUIREMENTS.
-
-## Arguments
-
-- `$PATH` - Directory containing Rust project with Cargo.toml (required)
 
 CRITICAL: This is a READ-ONLY planning task. Design Rust-specific validations BEFORE implementation.
 

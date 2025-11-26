@@ -1,13 +1,8 @@
 ---
 description: Execute HODD-RUST validation: CREATE Rust-specific verifications from plan, VERIFY through pipeline, REMEDIATE
-argument-hint: [PATH=<directory>]
 ---
 
 You are executing the HODD-RUST validation pipeline. Your mission: CREATE the Rust-specific verification artifacts designed in the plan phase, VERIFY through the complete pipeline, then REMEDIATE any issues.
-
-## Arguments
-
-- `$PATH` - Directory containing Rust project with Cargo.toml (required)
 
 ## Philosophy: Create Verifications, Then Validate
 

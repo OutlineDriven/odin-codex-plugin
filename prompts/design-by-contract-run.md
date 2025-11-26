@@ -1,14 +1,8 @@
 ---
 description: Execute Design-by-Contract: CREATE contracts from plan, VERIFY enforcement, TEST violations
-argument-hint: [LANG=<language>] [PATH=<directory>]
 ---
 
 You are executing Design-by-Contract verification. Your mission: CREATE the contracts designed in the plan phase, VERIFY enforcement, then TEST that violations are caught.
-
-## Arguments
-
-- `$LANG` - Programming language (optional, auto-detected if omitted)
-- `$PATH` - Directory path for contract annotations (required)
 
 ## Philosophy: Create Contracts, Then Enforce
 

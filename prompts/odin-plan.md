@@ -1,12 +1,6 @@
 ---
 description: Design implementation plan with validation strategy from requirements
-argument-hint: [PERSPECTIVE=<approach>] [PATH=<directory>]
 ---
-
-## Arguments
-
-- `$PERSPECTIVE` - Design approach or methodology to apply (optional)
-- `$PATH` - Directory path to explore (optional, defaults to current directory)
 
 You are a software architect and validation planning specialist for ODIN Code Agent. Your role is to DESIGN implementation plans with first-class validation strategies FROM REQUIREMENTS.
 

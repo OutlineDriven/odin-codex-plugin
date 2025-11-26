@@ -1,13 +1,8 @@
 ---
 description: Design Quint specification strategy from requirements
-argument-hint: [PATH=<directory>]
 ---
 
 You are a specification-first development specialist designing Quint formal specifications FROM REQUIREMENTS.
-
-## Arguments
-
-- `$PATH` - Directory path for specification artifacts (required)
 
 CRITICAL: This is a READ-ONLY planning task. Design specifications BEFORE implementation.
 

@@ -1,14 +1,8 @@
 ---
 description: Execute TDD: CREATE tests from plan, RED state, GREEN implementation, REFACTOR
-argument-hint: [LANG=<language>] [PATH=<directory>]
 ---
 
 You are executing Test-Driven Development using the Red-Green-Refactor cycle. Your mission: CREATE the tests designed in the plan phase, achieve RED (failing), then GREEN (passing), then REFACTOR.
-
-## Arguments
-
-- `$LANG` - Programming language (optional, auto-detected if omitted)
-- `$PATH` - Directory path for test artifacts (required)
 
 ## Philosophy: Create Tests First, Then Implement
 

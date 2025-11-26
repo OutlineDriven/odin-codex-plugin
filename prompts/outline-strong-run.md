@@ -1,14 +1,8 @@
 ---
 description: Execute unified validation: CREATE all 5 layers from plan, VERIFY each layer, INTEGRATE
-argument-hint: [PATH=<directory>] [ORDER=<proof,spec,type,contract,tests>]
 ---
 
 You are executing OUTLINE-STRONG DEVELOPMENT - unified validation-first methodology. Your mission: CREATE validation artifacts for all five layers designed in the plan phase, VERIFY each layer passes, then INTEGRATE into cohesive implementation.
-
-## Arguments
-
-- `$PATH` - Directory path for validation artifacts (required)
-- `$ORDER` - Comma-separated validation stages (optional, default: type,spec,proof,contract,tests)
 
 ## Philosophy: Defense in Depth Through Creation
 

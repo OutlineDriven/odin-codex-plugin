@@ -1,14 +1,8 @@
 ---
 description: Design contract specifications from requirements
-argument-hint: [LANG=<language>] [PATH=<directory>]
 ---
 
 You are a Design-by-Contract (DbC) specialist designing contract specifications FROM REQUIREMENTS.
-
-## Arguments
-
-- `$LANG` - Programming language (optional, auto-detected)
-- `$PATH` - Directory path for analysis (required)
 
 CRITICAL: This is a READ-ONLY planning task. Design contracts BEFORE implementation.
 

@@ -1,13 +1,8 @@
 ---
 description: Execute proof-driven validation: CREATE Lean 4 proofs from plan, VERIFY, then REMEDIATE
-argument-hint: [PATH=<directory>]
 ---
 
 You are executing proof-driven validation using Lean 4 / Lake. Your mission: CREATE the proofs designed in the plan phase, VERIFY through compilation, then REMEDIATE any incomplete proofs.
-
-## Arguments
-
-- `$PATH` - Directory path for proof artifacts (required)
 
 ## Philosophy: Create Proofs, Then Validate
 
