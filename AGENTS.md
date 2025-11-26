@@ -13,7 +13,7 @@ ALWAYS think, reason, act, respond in English regardless of user's language. Tra
 </language_enforcement>
 
 <deep_reasoning>
-Think systemically using SHORT-form KEYWORDS for efficient internal reasoning. Use MINIMAL English words per step. Reason hard and long, but token-efficiently. Switch to normal conversation style when done. Break down complex problems. Critically review internal reasoning. Validate logical sanity before deriving final answer.
+Think systemically using SHORT-form KEYWORDS for efficient internal reasoning. Use MINIMAL English words per step. Reason hard and long, but token-efficiently. Switch to normal conversation style when done. Break down complex problems into fundamental components. Critically review internal reasoning. Validate logical sanity before deriving final answer.
 </deep_reasoning>
 
 <investigate_before_answering>
@@ -216,10 +216,11 @@ Always retrieve framework/library docs using: ref-tools, context7, webfetch. Use
 ## Code Tools Reference
 
 <code_tools>
-**MANDATES:** ALWAYS leverage AG/Edit suite. Both first-tier options—use based on task requirements.
-- **SCOPE CONTROL:** Targeted directory search; explicit file-type filtering; precise application
-- **PREVIEW REQUIREMENT:** Always preview before applying—NO EXCEPTIONS
-- **SAFETY PROTOCOL:** Validate patterns on test data first
+**MANDATES:** ALWAYS leverage AG/Edit suite/fd/lsd/rg. **Highly prefer ast-grep for code ops.**
+
+**Scope control:** Targeted directory search, explicit paths, file-type filtering, precise changes.
+**Preview requirement:** Always preview before applying—NO EXCEPTIONS. Use -C flag or equivalent.
+**Safety protocol:** Validate patterns on test data first. Use preview mode or single file verify.
 
 **SMART-SELECT:** Use AG for code search, AST patterns, structural refactoring, bulk ops, language-aware transforms (90% error reduction, 10x accurate). Use Edit suite for simple file edits, straightforward replacements, multi-file coordinated changes, non-code files, atomic multi-file ops.
 
@@ -238,11 +239,9 @@ AST-based search/transform. Understands code syntax/structure (not just text). L
 
 **Best Practices:** Always `-C 3` before `-U` | Specify `-l language` | Invalid pattern? Use pattern object with context+selector | Ambiguous C/Go? Add context+selector | Missing stopBy:end with inside/has? Add for full traversal | Performance: Combine kind+regex, prefer specific patterns, test on small files | Debug: `ast-grep -p 'pattern' -l js --debug-query=cst`
 
-### 2) Edit suite [FIRST-TIER OPTION]
-Codex-native workspace editing. Excellent for straightforward edits, multi-file changes, non-code files, atomic operations.
-
-**When to use:** Simple line changes, adding/removing sections, multi-file coordinated edits, non-code modifications, atomic changes across files
-
+### 2) Edit suite [FILE EDITING]
+Workspace editing tools. Excellent for straightforward edits, multi-file changes, simple line mods.
+**When to use:** Simple line changes, add/remove sections, multi-file coordinated edits, atomic changes, non-code files.
 **Best practices:** Preview all edits, ensure well-scoped, verify file paths.
 
 ### 3) lsd (LSD) [MANDATORY]
@@ -251,7 +250,7 @@ Modern ls replacement. **NEVER use ls—always lsd.**
 ### 4) fd (FD) [MANDATORY]
 Modern find replacement. **NEVER use find—always fd.**
 
-### Tool quick reference
+### Quick Reference
 **Code search:** `ast-grep -p 'function $NAME($ARGS) { $$$ }' -l js -C 3` (HIGHLY PREFERRED) | Fallback: `rg 'TODO' -A 5`
 **Code editing:** `ast-grep -p 'old($ARGS)' -r 'new($ARGS)' -l js -C 2` (preview) then `-U` (apply) | Also first-tier: Edit suite
 **File discovery:** `fd -e py`
