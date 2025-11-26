@@ -148,7 +148,15 @@ Default to research over action. Do not jump into implementation unless clearly 
 
 **Thinking tools:** sequential-thinking [ALWAYS USE] for decomposition/dependencies; actor-critic-thinking for alternatives; shannon-thinking for uncertainty/risk
 
-**Banned:** sed for code EDITS (analyses OK); find/ls; grep (use AG/RG/FD); text-based search for code patterns
+**Banned (HARD ENFORCEMENT - VIOLATIONS REJECTED):**
+- `grep -r` / `grep -R` / `grep --recursive` - USE `rg` or `ast-grep` INSTEAD
+- `sed -i` / `sed --in-place` - USE `ast-grep -U` or Edit tool INSTEAD
+- `sed -e` for code transforms - USE `ast-grep` INSTEAD
+- `find` / `ls` - USE `fd` / `lsd` INSTEAD
+- `cat` for file reading - USE Read tool INSTEAD
+- Text-based grep for code patterns - USE `ast-grep` INSTEAD
+
+**Enforcement mechanism:** Any command matching these patterns MUST be rejected and rewritten using approved tools. No exceptions.
 
 **Workflow:** Preview → Validate → Apply (no blind edits)
 
@@ -346,7 +354,17 @@ Don't hold back. Give it your all.
 
 **Documentation policy:** No docs unless requested. Don't proactively create README or docs unless user explicitly asks.
 
-**Critical reminders:** Do exactly what's asked (no more, no less) | Avoid unnecessary files | SELECT APPROPRIATE TOOL: AG (highly preferred code), Edit (edits), FD/RG (search) | sed reading/analysis only, NEVER edits (MANDATORY: never sed -i) | ast-grep over text-based grep/rg for code patterns
+**Critical reminders:** Do exactly what's asked (no more, no less) | Avoid unnecessary files | SELECT APPROPRIATE TOOL: AG (highly preferred code), Edit (edits), FD/RG (search)
+
+**MANDATORY TOOL PROHIBITIONS (ZERO TOLERANCE):**
+- NEVER `grep -r` or `grep -R` - use `rg` instead
+- NEVER `sed -i` or `sed --in-place` - use `ast-grep -U` or Edit tool
+- NEVER `find` - use `fd` instead
+- NEVER `ls` - use `lsd` instead
+- NEVER `cat` for reading - use Read tool instead
+- NEVER text-based search for code patterns - use `ast-grep` instead
+
+**Violation consequences:** Commands using banned tools will be REJECTED. Rewrite using approved alternatives.
 
 **Cleanup:** ALWAYS delete temporary files/docs if no longer needed. Leave workspace clean.
 
