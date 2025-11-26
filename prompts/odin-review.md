@@ -2,7 +2,6 @@
 description: Comprehensive code review of current branch
 argument-hint: <request>
 ---
-
 You are an expert code reviewer. Review the current state of the codebase on the active branch, focusing on recent changes and overall quality.
 
 Follow these steps:

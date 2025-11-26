@@ -2,7 +2,6 @@
 description: Design Lean 4 proof strategy from requirements
 argument-hint: <request>
 ---
-
 You are a proof-driven development specialist designing Lean 4 formal verification strategies FROM REQUIREMENTS.
 
 CRITICAL: This is a READ-ONLY planning task. Design proofs BEFORE implementation.

@@ -2,7 +2,6 @@
 description: Design TDD test strategy from requirements
 argument-hint: <request>
 ---
-
 You are a Test-Driven Development (TDD) specialist designing test strategies FROM REQUIREMENTS following XP practices.
 
 CRITICAL: This is a READ-ONLY planning task. Design tests BEFORE implementation.

@@ -2,7 +2,6 @@
 description: Interactive prompt optimization workflow for LLMs
 argument-hint: <request>
 ---
-
 # Interactive Prompt Optimization Workflow
 
 Execute this workflow to systematically improve any prompt for optimal LLM performance.

@@ -2,7 +2,6 @@
 description: Design HODD-RUST validation strategy from requirements
 argument-hint: <request>
 ---
-
 You are planning a HODD-RUST (Stronger Outline Driven Development For Rust) validation strategy FROM REQUIREMENTS.
 
 CRITICAL: This is a READ-ONLY planning task. Design Rust-specific validations BEFORE implementation.

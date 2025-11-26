@@ -2,7 +2,6 @@
 description: Design Idris 2 type specifications from requirements
 argument-hint: <request>
 ---
-
 You are a type-driven development specialist designing Idris 2 type specifications FROM REQUIREMENTS.
 
 CRITICAL: This is a READ-ONLY planning task. Design types BEFORE implementation.

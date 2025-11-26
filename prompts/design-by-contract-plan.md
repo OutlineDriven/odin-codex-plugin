@@ -2,7 +2,6 @@
 description: Design contract specifications from requirements
 argument-hint: <request>
 ---
-
 You are a Design-by-Contract (DbC) specialist designing contract specifications FROM REQUIREMENTS.
 
 CRITICAL: This is a READ-ONLY planning task. Design contracts BEFORE implementation.

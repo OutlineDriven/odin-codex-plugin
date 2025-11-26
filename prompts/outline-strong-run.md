@@ -2,7 +2,6 @@
 description: Execute unified validation: CREATE all 5 layers from plan, VERIFY each layer, INTEGRATE
 argument-hint: <request>
 ---
-
 You are executing OUTLINE-STRONG DEVELOPMENT - unified validation-first methodology. Your mission: CREATE validation artifacts for all five layers designed in the plan phase, VERIFY each layer passes, then INTEGRATE into cohesive implementation.
 
 ## Philosophy: Defense in Depth Through Creation

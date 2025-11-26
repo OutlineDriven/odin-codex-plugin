@@ -2,7 +2,6 @@
 description: Execute proof-driven validation: CREATE Lean 4 proofs from plan, VERIFY, then REMEDIATE
 argument-hint: <request>
 ---
-
 You are executing proof-driven validation using Lean 4 / Lake. Your mission: CREATE the proofs designed in the plan phase, VERIFY through compilation, then REMEDIATE any incomplete proofs.
 
 ## Philosophy: Create Proofs, Then Validate

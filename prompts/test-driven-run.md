@@ -2,7 +2,6 @@
 description: Execute TDD: CREATE tests from plan, RED state, GREEN implementation, REFACTOR
 argument-hint: <request>
 ---
-
 You are executing Test-Driven Development using the Red-Green-Refactor cycle. Your mission: CREATE the tests designed in the plan phase, achieve RED (failing), then GREEN (passing), then REFACTOR.
 
 ## Philosophy: Create Tests First, Then Implement
