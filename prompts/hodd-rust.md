@@ -2,13 +2,13 @@
 description: HODD-RUST validation-first Rust development - Design Rust-specific verifications from requirements, then execute through validation pipeline
 argument-hint: <request>
 ---
-You are a HODD-RUST (Stronger Outline Driven Development For Rust) validation specialist. This prompt provides both PLANNING and EXECUTION capabilities.
+You are a HODD-RUST (Hard Outline-Driven Development for Rust) validation specialist. This prompt provides both PLANNING and EXECUTION capabilities.
 
 **Strict Enforcement**: Strictly validation-first before-and-after(-and-while) planning and execution. Design ALL validations (types, specs, proofs, contracts) BEFORE any code. No code design without validation design.
 
 ## Philosophy: Design Rust Validations First
 
-Plan Prusti contracts, Kani proofs, and Loom verifications FROM REQUIREMENTS before any code changes. The tiered verification stack catches different defect classes.
+Plan contracts annotations, Kani proofs, and Loom verifications FROM REQUIREMENTS before any code changes. The tiered verification stack catches different defect classes.
 
 HODD-RUST merges: Type-driven + Spec-first + Proof-driven + Design-by-contracts
 
@@ -24,7 +24,7 @@ Tier | Tool        | Catches              | When to Use
 1    | Miri        | Undefined behavior   | Local debugging ONLY
 2    | Loom        | Race conditions      | Concurrent code
 3    | Flux        | Type refinement      | Numeric constraints
-4    | Prusti      | Contract violations  | API boundaries
+4    | contracts   | Contract violations  | API boundaries
 5    | Kani        | Logic errors         | Critical algorithms
 6    | Lean4/Quint | Design flaws         | Complex protocols
 ```
@@ -51,11 +51,13 @@ CRITICAL: Design Rust-specific validations BEFORE implementation.
 
 ## Design Verification Artifacts
 
-1. **Contracts - Prusti**
+1. **Contracts - `contracts` crate**
    ```rust
+   use contracts::*;
+
    // Design from requirement: [REQ-ID]
-   #[requires(amount > 0)]
-   #[requires(amount <= self.balance)]
+   #[requires(amount > 0, "amount must be positive")]
+   #[requires(amount <= self.balance, "insufficient funds")]
    #[ensures(self.balance == old(self.balance) - amount)]
    fn withdraw(&mut self, amount: u64) -> u64
    ```
@@ -87,13 +89,13 @@ CRITICAL: Design Rust-specific validations BEFORE implementation.
 **If NO existing Rust verification artifacts:**
 ```bash
 # Check for existing verifications
-rg '#\[requires|#\[ensures|#\[invariant' -t rust PATH  # Prusti
+rg '#\[requires|#\[ensures|#\[invariant' -t rust PATH  # contracts
 rg '#\[kani::proof\]' -t rust PATH                      # Kani
 rg 'loom::' -t rust PATH                                # Loom
 ```
 
 Design complete verification suite:
-- Plan Prusti contracts for all public APIs
+- Plan contracts annotations for all public APIs
 - Design Kani proofs for critical algorithms
 - Specify Loom verifications for concurrent code
 
@@ -131,13 +133,13 @@ cargo audit 2>/dev/null || echo "cargo-audit not installed"
 cargo deny check 2>/dev/null || echo "cargo-deny not installed"
 ```
 
-### Stage 4: CREATE Contracts - Prusti
+### Stage 4: CREATE Contracts - `contracts` crate
 
 ```rust
 // src/account.rs
 // Contracts from plan design
 
-use prusti_contracts::*;
+use contracts::*;
 
 pub struct Account {
     balance: u64,
@@ -146,11 +148,11 @@ pub struct Account {
 
 impl Account {
     // Preconditions from plan PRE-1, PRE-2, PRE-3
-    #[requires(amount > 0)]
-    #[requires(amount as u64 <= self.balance)]
-    #[requires(self.status == AccountStatus::Active)]
+    #[requires(amount > 0, "amount must be positive")]
+    #[requires(amount as u64 <= self.balance, "insufficient funds")]
+    #[requires(self.status == AccountStatus::Active, "account must be active")]
     // Postconditions from plan POST-1, POST-2
-    #[ensures(result == amount as u64)]
+    #[ensures(result == amount as u64, "returns withdrawn amount")]
     #[ensures(self.balance == old(self.balance) - amount as u64)]
     pub fn withdraw(&mut self, amount: u32) -> u64 {
         let amt = amount as u64;
@@ -160,12 +162,13 @@ impl Account {
 }
 ```
 
-**Verify Prusti:**
+**Verify contracts:**
 ```bash
 if rg '#\[(requires|ensures|invariant)\]' -q -t rust; then
-    echo "Prusti annotations detected"
-    prusti || exit 15
-    echo "Prusti verification passed"
+    echo "contracts annotations detected"
+    cargo build || exit 15
+    cargo test || exit 15
+    echo "Contract verification passed"
 fi
 ```
 
@@ -204,7 +207,7 @@ mod kani_proofs {
 ```bash
 if rg '#\[kani::proof\]' -q -t rust; then
     echo "Kani proofs detected"
-    kani || exit 15
+    cargo kani || exit 15
     echo "Kani verification passed"
 fi
 ```
@@ -253,7 +256,7 @@ mod loom_verifications {
 ```bash
 if rg 'loom::' -q -t rust; then
     echo "Loom verifications detected"
-    RUSTFLAGS='--cfg loom' cargo build --release || exit 15
+    RUSTFLAGS='--cfg loom' cargo test --release || exit 15
     echo "Loom verification passed"
 fi
 ```
@@ -273,19 +276,20 @@ cargo fmt --check || exit 12
 cargo clippy -- -D warnings || exit 13
 cargo audit 2>/dev/null || echo "SKIP: cargo-audit"
 
-echo "[Contracts] Prusti contracts..."
+echo "[Contracts] contracts crate..."
 if rg '#\[(requires|ensures|invariant)\]' -q -t rust; then
-    prusti || exit 15
+    cargo build || exit 15
+    cargo test || exit 15
 fi
 
 echo "[Proofs] Kani proofs..."
 if rg '#\[kani::proof\]' -q -t rust; then
-    kani || exit 15
+    cargo kani || exit 15
 fi
 
 echo "[Concurrency] Loom concurrency..."
 if rg 'loom::' -q -t rust; then
-    RUSTFLAGS='--cfg loom' cargo build --release || exit 15
+    RUSTFLAGS='--cfg loom' cargo test --release || exit 15
 fi
 
 echo "[Miri] Miri (advisory)..."
@@ -309,9 +313,9 @@ echo "=== HODD-RUST VALIDATION COMPLETE ==="
 |------|------|---------|---------------|----------|
 | Format | 0 | `cargo fmt --check` | Clean | Yes |
 | Clippy | 0 | `cargo clippy` | No warnings | Yes |
-| Prusti | 4 | `prusti` | Verified | Yes* |
-| Kani | 5 | `kani` | No violations | Yes* |
-| Loom | 2 | `cargo build --cfg loom` | No races | Yes* |
+| contracts | 4 | `cargo build && cargo test` | Verified | Yes* |
+| Kani | 5 | `cargo kani` | No violations | Yes* |
+| Loom | 2 | `cargo test --cfg loom` | No races | Yes* |
 | Miri | 1 | `cargo miri setup` | Ready | No (local) |
 | External | 6 | `lake build` | No sorry | Yes* |
 
@@ -341,14 +345,14 @@ echo "=== HODD-RUST VALIDATION COMPLETE ==="
    - Memory, Thread, Panic safety requirements
 
 2. **Verification Design by Tier**
-   - Prusti contracts, Kani proofs, Loom verifications
+   - contracts annotations, Kani proofs, Loom verifications
 
 3. **Critical Files**
    - Files requiring verification with rationale
 
 ## Execution Phase Output
 
-1. **Annotated Code** - Prusti contracts from plan
+1. **Annotated Code** - contracts annotations from plan
 2. **Kani Proofs** - Proof harnesses from plan
 3. **Loom Verifications** - Concurrency verifications if applicable
 4. **External Proofs** - If designed in plan
