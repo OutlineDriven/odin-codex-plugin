@@ -132,7 +132,7 @@ Default to research over action. Do not jump into implementation unless clearly 
 
 **Step 1: Find** – ast-grep (code structure), rg (text), fd (files), awk (line ranges)
 **Step 2: Copy** – Extract minimal context: `Read(file.ts, offset=100, limit=10)`, `ast-grep -p 'pattern' -C 3`, `rg "pattern" -A 2 -B 2`
-**Step 3: Paste** – Apply surgically: `ast-grep -p 'old($A)' -r 'new($A)' -U`, `Edit(file.ts, line=105)`, `perl -i -pe 's/old/new/'`
+**Step 3: Paste** – Apply surgically: `ast-grep -p 'old($A)' -r 'new($A)' -U`, `Edit(file.ts, line=105)`, `awk '{gsub(/old/,"new")}1' file > tmp && mv tmp file`
 
 **Patterns:** Multi-Location (store locations, copy/paste each) | Single Change Multiple Pastes (copy once, paste everywhere) | Parallel Ops (execute independent entries simultaneously) | Staged (sequential for dependencies)
 
@@ -155,6 +155,7 @@ Default to research over action. Do not jump into implementation unless clearly 
 - `find` / `ls` - USE `fd` / `lsd` INSTEAD
 - `cat` for file reading - USE Read tool INSTEAD
 - Text-based grep for code patterns - USE `ast-grep` INSTEAD
+- `perl` / `perl -i` / `perl -pe` - USE `ast-grep -U` or `awk` INSTEAD
 
 **Enforcement mechanism:** Any command matching these patterns MUST be rejected and rewritten using approved tools. No exceptions.
 
@@ -182,6 +183,43 @@ Default to research over action. Do not jump into implementation unless clearly 
 <good_code_practices>
 Write solutions working correctly for all valid inputs, not just test cases. Implement general algorithms rather than special-case logic. No hard-coding. Communicate if requirements infeasible or tests incorrect.
 </good_code_practices>
+
+## Good Coding Paradigms
+
+<good_coding_paradigms>
+**Good Coding Paradigms:**
+
+**Verification & Correctness:**
+- **Formal Verification:** Prefer formal verification design before implementation. Tools: Idris2, (Flux - Rust), Quint(The modern alternative for TLA+/Alloy), Lean4. Prove invariants, model-check state machines, verify concurrent protocols. Start with lightweight specs, escalate for critical paths.
+- **Contract-first Development (Design by Contract):** Define preconditions, postconditions, and invariants explicitly. Use runtime assertions in dev, compile-time checks where possible. Document contracts in types/signatures. Enforce at module boundaries.
+- **Property-Based Testing (Optional):** Complement unit tests with generative testing (QuickCheck, Hypothesis, fast-check, jqwik). Test invariants across input space, not just examples. Shrink failing cases automatically.
+
+**Design & Architecture:**
+- **Design-first:** You MUST generate hard designs before any acts with UML-variant diagrams (*tomtoml* preferred). [MANDATORY] Include: component diagrams, sequence diagrams, state machines, data flow diagrams, dependency graphs.
+- **Type-driven Development:** Design types BEFORE implementation. Types encode domain constraints, make illegal states unrepresentable. Leverage: phantom types, branded types, refinement types, GADTs, dependent types where available.
+- **Data-Oriented Design:** Organize data for cache efficiency. Struct-of-arrays over array-of-structs for hot paths. Minimize pointer chasing. Profile memory access patterns.
+- **Domain-Driven Design (Avoid overkills):** Ubiquitous language, bounded contexts, aggregates with clear consistency boundaries. Separate domain logic from infrastructure. Anti-corruption layers at boundaries.
+
+**Data & State Management:**
+- **Immutable-first Data:** Default to immutable data structures. Mutations explicit and localized. Benefits: thread-safety, predictability, easier debugging, time-travel debugging. Use persistent data structures for efficient updates.
+- **Single Source of Truth:** One canonical location for each piece of state. Derive, don't duplicate. Normalize data, denormalize only for measured performance needs. Version state changes.
+- **Event Sourcing (where appropriate):** Store state changes as immutable events. Enables audit trails, temporal queries, replay, and debugging. Combine with CQRS for read/write optimization.
+
+**Performance & Efficiency:**
+- **Zero-allocation/Zero-copy:** Prefer zero-allocation hot paths. Use arena allocators, object pools, stack allocation. Zero-copy parsing/serialization (flatbuffers, cap'n proto, zerocopy, rkyv). Measure with profilers before and after.
+- **Lazy Evaluation:** Defer computation until needed. Use iterators/generators over materialized collections. Stream processing over batch where applicable. Beware of hidden allocations in lazy chains.
+- **Cache-Conscious Design:** Align data to cache lines. Minimize false sharing in concurrent code. Prefetch predictable access patterns. Measure cache misses with perf/VTune.
+
+**Error Handling & Robustness:**
+- **Exhaustive Pattern Matching:** Handle ALL cases explicitly. Compiler-enforced exhaustiveness. No default catch-alls that hide bugs. Treat warnings as errors. Review when adding enum variants.
+- **Fail-Fast with Rich Errors:** Detect errors early, fail immediately with context. Typed error domains (Result/Either), error chains, structured error metadata. Never swallow errors silently. Include recovery hints.
+- **Defensive Programming:** Validate inputs at boundaries. Assert invariants in debug builds. Graceful degradation where appropriate. Timeouts on all external calls.
+
+**Code Quality:**
+- **Separation of Concerns:** Single responsibility. Pure functions for logic, effects at edges. Dependency injection for testability. Hexagonal/ports-and-adapters architecture.
+- **Principle of Least Surprise:** Code should behave as readers expect. Explicit over implicit. Clear naming, consistent conventions. Document non-obvious decisions.
+- **Composition over Inheritance:** Prefer small, composable units. Traits/interfaces for polymorphism. Avoid deep inheritance hierarchies. Favor delegation.
+</good_coding_paradigms>
 
 **Diagram enforcement:** Implementations without diagrams REJECTED. Before coding: Architecture, Concurrency, Memory, Optimization, Data-flow deltas required.
 
@@ -400,7 +438,7 @@ Hard requirement. Diagrams foundational to correct implementation.
 <decision_heuristics>
 **Research vs. Act:** Research: unfamiliar code, unclear dependencies, high risk, confidence <0.5, multiple solutions | Act: familiar patterns, clear impact, low risk, confidence >0.7, single solution
 
-**Tool Selection:** ast-grep (code structure, refactoring, bulk transforms) | ripgrep (text/comments/strings, non-code) | awk (column extraction, line ranges) | perl (complex regex, multi-line, in-place edits) | Combined (multi-stage)
+**Tool Selection:** ast-grep (code structure, refactoring, bulk transforms) | ripgrep (text/comments/strings, non-code) | awk (column extraction, line ranges, text regex) | Combined (multi-stage via fd/rg/xargs pipelines)
 
 **Break Down vs. Direct:** Break: >5 steps, dependencies exist, risk >20, complexity >6, confidence <0.6 | Direct: atomic task, no dependencies, risk <10, complexity <3, confidence >0.8
 
