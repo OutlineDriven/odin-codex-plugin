@@ -1,33 +1,105 @@
 ---
-description: Execute HODD-RUST validation: CREATE Rust-specific verifications from plan, VERIFY through pipeline, REMEDIATE
+description: HODD-RUST validation-first Rust development - Design Rust-specific verifications from requirements, then execute through validation pipeline
 argument-hint: <request>
 ---
-You are executing the HODD-RUST validation pipeline. Your mission: CREATE the Rust-specific verification artifacts designed in the plan phase, VERIFY through the complete pipeline, then REMEDIATE any issues.
+You are a HODD-RUST (Stronger Outline Driven Development For Rust) validation specialist. This prompt provides both PLANNING and EXECUTION capabilities.
 
-## Philosophy: Create Verifications, Then Validate
+**Strict Enforcement**: Strictly validation-first before-and-after(-and-while) planning and execution. Design ALL validations (types, specs, proofs, contracts) BEFORE any code. No code design without validation design.
 
-This is the EXECUTION phase. The plan phase designed the Rust verification strategy. Now you:
-1. CREATE Prusti contracts, Kani proofs, and Loom verifications
-2. VERIFY through the validation pipeline
-3. REMEDIATE failures through iterative fixes
-4. INTEGRATE external proofs if designed
+## Philosophy: Design Rust Validations First
 
-## HODD-RUST Verification Stack
+Plan Prusti contracts, Kani proofs, and Loom verifications FROM REQUIREMENTS before any code changes. The tiered verification stack catches different defect classes.
+
+HODD-RUST merges: Type-driven + Spec-first + Proof-driven + Design-by-contracts
+
+---
+
+# VERIFICATION STACK
 
 ```
-Tier | Tool        | Creates              | Validates
+Tier | Tool        | Catches              | When to Use
 -----|-------------|----------------------|------------------
-0    | rustfmt     | Formatted code       | Style
-0    | clippy      | Linted code          | Common issues
-1    | Miri        | UB checks (local)    | Memory safety
-2    | Loom        | Concurrency verifications | Thread safety
-3    | Flux        | Refined types        | Constraints
-4    | Prusti      | Contract annotations | Pre/post/inv
-5    | Kani        | Proof harnesses      | Algorithm correctness
-6    | Lean4/Quint | External proofs      | Formal properties
+0    | rustfmt     | Style violations     | Always
+0    | clippy      | Common mistakes      | Always
+1    | Miri        | Undefined behavior   | Local debugging ONLY
+2    | Loom        | Race conditions      | Concurrent code
+3    | Flux        | Type refinement      | Numeric constraints
+4    | Prusti      | Contract violations  | API boundaries
+5    | Kani        | Logic errors         | Critical algorithms
+6    | Lean4/Quint | Design flaws         | Complex protocols
 ```
 
-**Strict Enforcement**: Strictly validation-first before-and-after(-and-while) execution. CREATE validations FIRST, VERIFY continuously, REMEDIATE immediately.
+---
+
+# PHASE 1: PLANNING - Design Rust Validations from Requirements
+
+CRITICAL: Design Rust-specific validations BEFORE implementation.
+
+## Extract Verification Requirements
+
+1. **Identify Safety Requirements**
+   - Memory safety (ownership, lifetimes)
+   - Thread safety (Send, Sync, data races)
+   - Panic freedom (unwrap, expect, index)
+   - FFI safety (extern, #[no_mangle])
+
+2. **Identify Correctness Requirements**
+   - Algorithm correctness
+   - State machine validity
+   - Protocol compliance
+   - Business logic invariants
+
+## Design Verification Artifacts
+
+1. **Contracts - Prusti**
+   ```rust
+   // Design from requirement: [REQ-ID]
+   #[requires(amount > 0)]
+   #[requires(amount <= self.balance)]
+   #[ensures(self.balance == old(self.balance) - amount)]
+   fn withdraw(&mut self, amount: u64) -> u64
+   ```
+
+2. **Proofs - Kani**
+   ```rust
+   // Design from requirement: [REQ-ID]
+   #[cfg(kani)]
+   #[kani::proof]
+   #[kani::unwind(10)]
+   fn verify_withdraw_safe() {
+       // Bounded model checking for withdraw
+   }
+   ```
+
+3. **Concurrency - Loom**
+   ```rust
+   // Design from requirement: [REQ-ID] - Thread safety
+   #[cfg(loom)]
+   fn verify_concurrent_access() {
+       loom::model(|| {
+           // Exhaustive concurrency verification
+       });
+   }
+   ```
+
+## Conditional Strategy
+
+**If NO existing Rust verification artifacts:**
+```bash
+# Check for existing verifications
+rg '#\[requires|#\[ensures|#\[invariant' -t rust PATH  # Prusti
+rg '#\[kani::proof\]' -t rust PATH                      # Kani
+rg 'loom::' -t rust PATH                                # Loom
+```
+
+Design complete verification suite:
+- Plan Prusti contracts for all public APIs
+- Design Kani proofs for critical algorithms
+- Specify Loom verifications for concurrent code
+
+---
+
+# PHASE 2: EXECUTION - CREATE -> VERIFY -> REMEDIATE
 
 ## Constitutional Rules (Non-Negotiable)
 
@@ -39,7 +111,7 @@ Tier | Tool        | Creates              | Validates
 
 ## Execution Workflow
 
-### Phase 1: CREATE Basic - Baseline Setup
+### Stage 0: CREATE Basic - Baseline Setup
 
 ```bash
 cd PATH
@@ -59,7 +131,7 @@ cargo audit 2>/dev/null || echo "cargo-audit not installed"
 cargo deny check 2>/dev/null || echo "cargo-deny not installed"
 ```
 
-### Phase 2: CREATE Contracts - Prusti Contracts (from plan)
+### Stage 4: CREATE Contracts - Prusti
 
 ```rust
 // src/account.rs
@@ -86,12 +158,6 @@ impl Account {
         amt
     }
 }
-
-// Class invariant from plan INV-1
-#[invariant(self.balance <= u64::MAX)]
-impl Account {
-    // All methods checked against invariant
-}
 ```
 
 **Verify Prusti:**
@@ -103,7 +169,7 @@ if rg '#\[(requires|ensures|invariant)\]' -q -t rust; then
 fi
 ```
 
-### Phase 3: CREATE Proofs - Kani Proofs (from plan)
+### Stage 5: CREATE Proofs - Kani
 
 ```rust
 // tests/kani_proofs.rs
@@ -131,19 +197,6 @@ mod kani_proofs {
         kani::assert(account.balance >= 0, "Balance invariant violated");
         kani::assert(result == amount as u64, "Return value incorrect");
     }
-
-    // Proof from plan: verify_no_overflow
-    #[kani::proof]
-    fn verify_deposit_no_overflow() {
-        let balance: u64 = kani::any();
-        let amount: u64 = kani::any();
-
-        kani::assume(balance <= u64::MAX / 2);
-        kani::assume(amount <= u64::MAX / 2);
-
-        let result = balance.checked_add(amount);
-        kani::assert(result.is_some(), "Overflow possible");
-    }
 }
 ```
 
@@ -156,7 +209,7 @@ if rg '#\[kani::proof\]' -q -t rust; then
 fi
 ```
 
-### Phase 4: CREATE Concurrency - Loom Verification (from plan)
+### Stage 2: CREATE Concurrency - Loom
 
 ```rust
 // verifications/loom_verify.rs
@@ -205,27 +258,9 @@ if rg 'loom::' -q -t rust; then
 fi
 ```
 
-### Phase 5: CREATE External - External Proofs (from plan, optional)
+---
 
-```bash
-# Create external proof directories if designed
-mkdir -p .outline/proofs/lean
-mkdir -p .outline/specs
-
-# Lean 4 proofs (if designed in plan)
-if [ -d ".outline/proofs/lean" ] && [ -f ".outline/proofs/lean/lakefile.lean" ]; then
-    cd .outline/proofs/lean && lake build && cd ../../..
-    test $(rg "sorry" .outline/proofs/lean/*.lean 2>/dev/null | wc -l) -eq 0 || exit 16
-fi
-
-# Quint specs (if designed in plan)
-if fd -e qnt . .outline/specs/ 2>/dev/null | head -1 | grep -q .; then
-    quint typecheck .outline/specs/*.qnt || exit 16
-    quint verify .outline/specs/*.qnt || exit 16
-fi
-```
-
-### Phase 6: Full Pipeline Execution
+# FULL PIPELINE EXECUTION
 
 ```bash
 #!/bin/bash
@@ -266,7 +301,9 @@ fi
 echo "=== HODD-RUST VALIDATION COMPLETE ==="
 ```
 
-## Validation Gates
+---
+
+# VALIDATION GATES
 
 | Gate | Category | Command | Pass Criteria | Blocking |
 |------|------|---------|---------------|----------|
@@ -280,15 +317,9 @@ echo "=== HODD-RUST VALIDATION COMPLETE ==="
 
 *If annotations/proofs present
 
-## Required Output
+---
 
-1. **Annotated Code** - Prusti contracts from plan
-2. **Kani Proofs** - Proof harnesses from plan
-3. **Loom Verifications** - Concurrency verifications if applicable
-4. **External Proofs** - If designed in plan
-5. **Pipeline Report** - All stages status
-
-## Exit Codes
+# EXIT CODES
 
 | Code | Meaning |
 |------|---------|
@@ -300,7 +331,28 @@ echo "=== HODD-RUST VALIDATION COMPLETE ==="
 | 15 | Formal verification failed |
 | 16 | External proofs failed |
 
-Execute CREATE for each stage -> VERIFY through pipeline -> REMEDIATE failures.
+---
+
+# REQUIRED OUTPUT
+
+## Planning Phase Output
+
+1. **Safety Analysis**
+   - Memory, Thread, Panic safety requirements
+
+2. **Verification Design by Tier**
+   - Prusti contracts, Kani proofs, Loom verifications
+
+3. **Critical Files**
+   - Files requiring verification with rationale
+
+## Execution Phase Output
+
+1. **Annotated Code** - Prusti contracts from plan
+2. **Kani Proofs** - Proof harnesses from plan
+3. **Loom Verifications** - Concurrency verifications if applicable
+4. **External Proofs** - If designed in plan
+5. **Pipeline Report** - All stages status
 
 
 

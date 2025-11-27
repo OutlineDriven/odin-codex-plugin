@@ -1,15 +1,102 @@
 ---
-description: Execute TDD: CREATE tests from plan, RED state, GREEN implementation, REFACTOR
+description: Test-Driven Development (TDD) - Design tests from requirements, then execute RED -> GREEN -> REFACTOR cycle
 argument-hint: <request>
 ---
-You are executing Test-Driven Development using the Red-Green-Refactor cycle. Your mission: CREATE the tests designed in the plan phase, achieve RED (failing), then GREEN (passing), then REFACTOR.
+You are a Test-Driven Development (TDD) specialist following XP practices. This prompt provides both PLANNING and EXECUTION capabilities.
 
-## Philosophy: Create Tests First, Then Implement
+## Philosophy: Design Tests First, Then Implement
 
-This is the EXECUTION phase. The plan phase designed test cases. Now you:
-1. CREATE test files from plan design (expect RED)
-2. Achieve GREEN through minimal implementation
-3. REFACTOR while keeping tests green
+Plan what tests to write, what properties to verify, and what behaviors to validate BEFORE any implementation. Tests define the specification. Then execute the Red-Green-Refactor cycle.
+
+---
+
+# PHASE 1: PLANNING - Design Tests from Requirements
+
+CRITICAL: Design tests BEFORE implementation.
+
+## Extract Test Cases from Requirements
+
+1. **Identify Test Categories**
+   - Error cases (what should fail and how?)
+   - Edge cases (boundary conditions)
+   - Happy paths (normal operation)
+   - Property tests (invariants that must hold)
+
+2. **Prioritize Test Design**
+   ```
+   Priority Order:
+   1. Error cases (prevent regressions)
+   2. Edge cases (catch boundary bugs)
+   3. Happy paths (verify functionality)
+   4. Properties (ensure invariants)
+   ```
+
+## Design Test Structure
+
+1. **Plan Test Organization**
+   ```
+   tests/
+   ├── unit/
+   │   ├── [module]_test.[ext]
+   │   └── [module]_property_test.[ext]
+   ├── integration/
+   │   └── [feature]_test.[ext]
+   └── fixtures/
+       └── test_data.[ext]
+   ```
+
+2. **Design Test Cases**
+
+   | Test Name | Type | Input | Expected | Requirement |
+   |-----------|------|-------|----------|-------------|
+   | `test_err_1` | Error | Invalid | Exception | REQ-1 |
+   | `test_edge_1` | Edge | Boundary | Handled | REQ-2 |
+   | `test_happy_1` | Happy | Normal | Success | REQ-3 |
+   | `prop_inv_1` | Property | Generated | Invariant | REQ-4 |
+
+## Test Framework Matrix
+
+| Language | Unit Framework | Property Framework | Assertion Style |
+|----------|---------------|-------------------|-----------------|
+| Rust | `cargo test` | proptest | `assert!`, `assert_eq!` |
+| Python | pytest | hypothesis | `assert`, `pytest.raises` |
+| TypeScript | vitest | fast-check | `expect()`, `toThrow()` |
+| Go | `go test` | rapid | `t.Error`, `t.Fatal` |
+| Java | JUnit 5 | jqwik | `assertEquals`, `assertThrows` |
+| Kotlin | Kotest | built-in | `shouldBe`, `shouldThrow` |
+| C++ | GoogleTest | rapidcheck | `EXPECT_EQ`, `EXPECT_THROW` |
+
+## Test Design Templates
+
+### Error Case Test
+```
+Test: test_[operation]_rejects_[invalid_condition]
+Given: [Invalid precondition state]
+When: [Operation invoked]
+Then: [Expected error/exception]
+Requirement: [REQ-ID]
+```
+
+### Edge Case Test
+```
+Test: test_[operation]_handles_[boundary]
+Given: [Boundary condition]
+When: [Operation invoked]
+Then: [Correct handling]
+Requirement: [REQ-ID]
+```
+
+### Property Test
+```
+Property: prop_[invariant_name]
+For all: [Generated inputs within constraints]
+Assert: [Invariant holds]
+Requirement: [REQ-ID]
+```
+
+---
+
+# PHASE 2: EXECUTION - RED -> GREEN -> REFACTOR
 
 ## Constitutional Rules (Non-Negotiable)
 
@@ -20,7 +107,7 @@ This is the EXECUTION phase. The plan phase designed test cases. Now you:
 
 ## Execution Workflow
 
-### Phase 1: CREATE Test Files (from plan)
+### Step 1: CREATE Test Files (RED State)
 
 **Priority Order from Plan:**
 1. Error cases (Priority 1)
@@ -85,7 +172,7 @@ class TestAccountFromPlan:
         assert account.balance >= 0
 ```
 
-### Phase 2: Achieve RED State
+### Step 2: Achieve RED State
 
 ```bash
 # Run tests - expect failures
@@ -96,7 +183,7 @@ pytest tests/ && echo "ERROR: Tests should fail!" && exit 13
 echo "RED state achieved - tests fail as expected"
 ```
 
-### Phase 3: Achieve GREEN State
+### Step 3: Achieve GREEN State
 
 **Implement minimal code to pass tests:**
 ```python
@@ -125,7 +212,7 @@ pytest tests/ -v || exit 14
 echo "GREEN state achieved - all tests pass"
 ```
 
-### Phase 4: REFACTOR
+### Step 4: REFACTOR
 
 ```bash
 # Clean up code while keeping tests green
@@ -134,7 +221,9 @@ pytest tests/ || exit 15
 echo "REFACTOR complete - tests still green"
 ```
 
-## Test Framework Commands
+---
+
+# TEST FRAMEWORK COMMANDS
 
 | Language | Run Tests | Watch Mode | Coverage |
 |----------|-----------|------------|----------|
@@ -145,7 +234,9 @@ echo "REFACTOR complete - tests still green"
 | Java | `mvn test` | - | `mvn jacoco:report` |
 | Kotlin | `./gradlew test` | `./gradlew -t test` | `./gradlew jacocoTestReport` |
 
-## Validation Gates
+---
+
+# VALIDATION GATES
 
 | Gate | Command | Pass Criteria | Blocking |
 |------|---------|---------------|----------|
@@ -155,26 +246,9 @@ echo "REFACTOR complete - tests still green"
 | REFACTOR | Post-cleanup | Tests still pass | Yes |
 | Coverage | Coverage report | >= 80% | No |
 
-## Required Output
+---
 
-1. **Created Test Files**
-   - `tests/test_[module].py` or equivalent
-   - Error case tests
-   - Edge case tests
-   - Happy path tests
-   - Property tests
-
-2. **TDD Cycle Report**
-   - RED: [X] tests failing
-   - GREEN: All tests passing
-   - REFACTOR: Code cleaned up
-
-3. **Coverage Summary**
-   - Lines covered
-   - Branch coverage
-   - Uncovered areas
-
-## Exit Codes
+# EXIT CODES
 
 | Code | Meaning |
 |------|---------|
@@ -185,7 +259,36 @@ echo "REFACTOR complete - tests still green"
 | 14 | Tests fail after implementation (GREEN not achieved) |
 | 15 | Tests fail after refactor (regression) |
 
-Execute CREATE -> RED -> GREEN -> REFACTOR cycle.
+---
+
+# REQUIRED OUTPUT
+
+## Planning Phase Output
+
+1. **Test Cases Designed**
+   - Error cases, Edge cases, Happy paths, Property tests
+
+2. **Test Artifact Structure**
+   - Directory layout for tests
+
+3. **TDD Cycle Plan**
+   - Order of test implementation
+
+## Execution Phase Output
+
+1. **Created Test Files**
+   - `tests/test_[module].py` or equivalent
+   - Error, edge, happy, property tests
+
+2. **TDD Cycle Report**
+   - RED: [X] tests failing
+   - GREEN: All tests passing
+   - REFACTOR: Code cleaned up
+
+3. **Coverage Summary**
+   - Lines covered
+   - Branch coverage
+   - Uncovered areas
 
 
 

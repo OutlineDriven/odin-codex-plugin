@@ -1,28 +1,100 @@
 ---
-description: Execute unified validation: CREATE all 5 layers from plan, VERIFY each layer, INTEGRATE
+description: Outline-Strong unified 5-layer validation - Design all validation layers from requirements, then execute CREATE -> VERIFY -> INTEGRATE cycle
 argument-hint: <request>
 ---
-You are executing OUTLINE-STRONG DEVELOPMENT - unified validation-first methodology. Your mission: CREATE validation artifacts for all five layers designed in the plan phase, VERIFY each layer passes, then INTEGRATE into cohesive implementation.
+You are an Outline-Strong validation orchestrator. This prompt provides both PLANNING and EXECUTION capabilities for comprehensive 5-layer verification.
 
-## Philosophy: Defense in Depth Through Creation
+## Philosophy: Defense in Depth from Requirements
 
-This is the EXECUTION phase. The plan phase designed the complete verification stack. Now you:
-1. CREATE artifacts for all five layers
-2. VERIFY each layer independently
-3. INTEGRATE layers into target implementation
-4. VALIDATE cross-layer correspondence
+Design all five validation layers FROM REQUIREMENTS simultaneously. Each layer catches different defect classes. Together they provide comprehensive verification. Then execute the full verification and integration cycle.
 
-## Verification Stack
+---
+
+# VERIFICATION STACK
 
 ```
-Layer | Tool      | Creates           | Catches
-------|-----------|-------------------|------------------
-1     | Idris 2   | Type specs        | Structural errors
-2     | Quint     | State specs       | Design flaws
-3     | Lean 4    | Formal proofs     | Invariant violations
-4     | deal/etc  | Contract annotations | Runtime violations
-5     | pytest/etc| Test suites       | Behavioral bugs
+Layer | Tool      | Catches              | Designed From
+------|-----------|----------------------|---------------
+1     | Idris 2   | Structural errors    | Type constraints
+2     | Quint     | Design flaws         | State requirements
+3     | Lean 4    | Invariant violations | Correctness properties
+4     | deal/etc  | Runtime violations   | API contracts
+5     | pytest/etc| Behavioral bugs      | Acceptance criteria
 ```
+
+---
+
+# PHASE 1: PLANNING - Design All 5 Layers from Requirements
+
+CRITICAL: Design all validation layers BEFORE implementation.
+
+## Extract Requirements for Each Layer
+
+1. **Layer 1 - Types (Idris 2)**
+   - What constraints must values satisfy?
+   - What state transitions are valid?
+   - What relationships must hold?
+
+2. **Layer 2 - Specifications (Quint)**
+   - What is the state machine model?
+   - What invariants must always hold?
+   - What temporal properties exist?
+
+3. **Layer 3 - Proofs (Lean 4)**
+   - What correctness theorems must hold?
+   - What safety properties need proof?
+   - What algorithms need verification?
+
+4. **Layer 4 - Contracts**
+   - What preconditions exist?
+   - What postconditions must be ensured?
+   - What class invariants apply?
+
+5. **Layer 5 - Tests**
+   - What error cases must be caught?
+   - What edge cases exist?
+   - What properties must hold?
+
+## Design Layer Correspondence
+
+Map the same property across all layers:
+
+```markdown
+Property: "Balance never negative"
+
+Layer 1 (Type):    balance : Nat  -- Non-negative by construction
+Layer 2 (Spec):    val inv_balance = balance >= 0
+Layer 3 (Proof):   theorem balance_preserved : balance >= 0
+Layer 4 (Contract): @deal.inv(lambda self: self.balance >= 0)
+Layer 5 (Test):    def test_balance_invariant(): assert acc.balance >= 0
+```
+
+## Plan Artifact Structure
+
+```
+.outline/
+├── proofs/
+│   ├── idris/        # Layer 1: Types
+│   │   ├── myproject.ipkg
+│   │   └── src/
+│   │       └── Types.idr
+│   └── lean/         # Layer 3: Proofs
+│       ├── lakefile.lean
+│       └── Theorems.lean
+├── specs/            # Layer 2: Specifications
+│   ├── types.qnt
+│   ├── state.qnt
+│   └── invariants.qnt
+└── contracts/        # Layer 4: Contract designs
+    └── contracts.md
+
+tests/                # Layer 5: Tests
+└── test_*.py
+```
+
+---
+
+# PHASE 2: EXECUTION - CREATE -> VERIFY -> INTEGRATE
 
 ## Constitutional Rules (Non-Negotiable)
 
@@ -34,7 +106,7 @@ Layer | Tool      | Creates           | Catches
 
 ## Execution Workflow
 
-### Phase 1: CREATE Layer 1 - Types (Idris 2)
+### Layer 1: CREATE Types (Idris 2)
 
 ```bash
 mkdir -p .outline/proofs/idris
@@ -43,7 +115,6 @@ cd .outline/proofs/idris && pack new ProjectTypes
 
 ```idris
 -- .outline/proofs/idris/src/Types.idr
--- From plan: Type definitions
 
 public export
 data Positive : Nat -> Type where
@@ -61,7 +132,7 @@ idris2 --check .outline/proofs/idris/src/*.idr || exit 11
 idris2 --total --check .outline/proofs/idris/src/*.idr || exit 11
 ```
 
-### Phase 2: CREATE Layer 2 - Specs (Quint)
+### Layer 2: CREATE Specs (Quint)
 
 ```bash
 mkdir -p .outline/specs
@@ -69,7 +140,6 @@ mkdir -p .outline/specs
 
 ```quint
 // .outline/specs/model.qnt
-// From plan: State model and invariants
 
 module account {
   type Account = { balance: int, status: Status }
@@ -95,7 +165,7 @@ quint typecheck .outline/specs/*.qnt || exit 12
 quint verify --main=account --invariant=inv_balanceNonNegative .outline/specs/*.qnt || exit 12
 ```
 
-### Phase 3: CREATE Layer 3 - Proofs (Lean 4)
+### Layer 3: CREATE Proofs (Lean 4)
 
 ```bash
 mkdir -p .outline/proofs/lean
@@ -104,7 +174,6 @@ cd .outline/proofs/lean && lake new ProjectProofs
 
 ```lean
 -- .outline/proofs/lean/ProjectProofs/Basic.lean
--- From plan: Theorem statements
 
 namespace Account
 
@@ -131,11 +200,10 @@ SORRY_COUNT=$(rg "sorry" .outline/proofs/lean/*.lean 2>/dev/null | wc -l)
 test "$SORRY_COUNT" -eq 0 || exit 13
 ```
 
-### Phase 4: CREATE Layer 4 - Contracts
+### Layer 4: CREATE Contracts
 
 ```python
 # src/account.py
-# From plan: Contract specifications
 
 import deal
 
@@ -156,11 +224,10 @@ deal lint src/ || exit 14
 pyright src/ || exit 14
 ```
 
-### Phase 5: CREATE Layer 5 - Tests
+### Layer 5: CREATE Tests
 
 ```python
 # tests/test_account.py
-# From plan: Test scenarios
 
 from hypothesis import given, strategies as st
 
@@ -191,18 +258,9 @@ pytest tests/ -v --hypothesis-show-statistics || exit 15
 pytest --cov=src --cov-fail-under=80 tests/ || exit 15
 ```
 
-### Phase 6: INTEGRATE and Verify Correspondence
+---
 
-**Correspondence Matrix Verification:**
-```markdown
-| Property | Idris | Quint | Lean | Contract | Test |
-|----------|-------|-------|------|----------|------|
-| balance >= 0 | Nat | inv_balance | preserves_inv | @deal.inv | test_invariant |
-| amount > 0 | Positive | precond | h_pos | @deal.pre | test_positive |
-| amount <= bal | LTE | guard | h_suff | @deal.pre | test_insufficient |
-```
-
-## Full Validation Pipeline
+# FULL PIPELINE EXECUTION
 
 ```bash
 #!/bin/bash
@@ -231,7 +289,9 @@ pytest tests/ -v --cov=src --cov-fail-under=80 || exit 15
 echo "=== ALL 5 LAYERS VERIFIED ==="
 ```
 
-## Validation Gates
+---
+
+# VALIDATION GATES
 
 | Gate | Layer | Command | Pass Criteria | Blocking |
 |------|-------|---------|---------------|----------|
@@ -242,17 +302,9 @@ echo "=== ALL 5 LAYERS VERIFIED ==="
 | Tests | 5 | `pytest --cov-fail-under=80` | All pass | Yes |
 | Correspondence | All | Manual review | Matrix complete | Yes |
 
-## Required Output
+---
 
-1. **Layer 1 Artifacts** - `.outline/proofs/idris/src/*.idr`
-2. **Layer 2 Artifacts** - `.outline/specs/*.qnt`
-3. **Layer 3 Artifacts** - `.outline/proofs/lean/*.lean`
-4. **Layer 4 Artifacts** - Annotated source code
-5. **Layer 5 Artifacts** - Test files
-6. **Correspondence Matrix** - All layers mapped
-7. **Validation Report** - All gates passed
-
-## Exit Codes
+# EXIT CODES
 
 | Code | Meaning |
 |------|---------|
@@ -264,7 +316,30 @@ echo "=== ALL 5 LAYERS VERIFIED ==="
 | 15 | Layer 5 (Tests) failed |
 | 16 | Correspondence incomplete |
 
-Execute CREATE for each layer -> VERIFY each layer -> INTEGRATE with correspondence validation.
+---
+
+# REQUIRED OUTPUT
+
+## Planning Phase Output
+
+1. **Layer Designs**
+   - Layer 1-5 specifications from requirements
+
+2. **Correspondence Matrix**
+   - Same property mapped across all layers
+
+3. **Artifact Summary**
+   - Location and purpose of each artifact
+
+## Execution Phase Output
+
+1. **Layer 1 Artifacts** - `.outline/proofs/idris/src/*.idr`
+2. **Layer 2 Artifacts** - `.outline/specs/*.qnt`
+3. **Layer 3 Artifacts** - `.outline/proofs/lean/*.lean`
+4. **Layer 4 Artifacts** - Annotated source code
+5. **Layer 5 Artifacts** - Test files
+6. **Correspondence Matrix** - All layers mapped
+7. **Validation Report** - All gates passed
 
 
 
