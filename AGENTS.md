@@ -74,27 +74,13 @@ Default to research over action. Do not jump into implementation unless clearly 
 - Choose straightforward flows; defer abstractions until repeated need is proven.
 </keep_it_simple>
 
-<workspace_organization>
-**Temporal Directory Convention:** ALL temporal working artifacts MUST use `.outline/` directory (workspace-relative).
+<temporal_files_organization>
+**Outline-Driven Development:** ALL temporal artifacts for outline-driven development MUST use `.outline/` directory. [MANDATORY]
 
-**Required structure:**
-- `.outline/proofs/` - Idris2, Lean4 formal proofs
-- `.outline/specs/` - Quint, Verus specifications
-- `.outline/contracts/` - Design-by-contract artifacts (Prusti, SPARK, Dafny)
-- `.outline/diagrams/` - Architecture, data-flow, concurrency, memory, optimization diagrams
-- `.outline/plans/` - Design documents, implementation plans
-- `.outline/mockups/` - UI/UX mockups, prototypes
-- `.outline/scratch/` - Temporary analysis, notes, working files
+**Non-Outline Files:** Use `/tmp` for temporary files unrelated to outline-driven development.
 
-**Rules:**
-- NEVER create temporal files in project root or source directories
-- ALWAYS prefix temporal paths with `.outline/`
-- Create `.outline/` subdirectory on first use
-- Clean up `.outline/scratch/` after task completion
-- Persist verification artifacts: `.outline/proofs/`, `.outline/specs/`, `.outline/contracts/`
-
-**Rationale:** Isolates generated artifacts from source code, prevents pollution of project structure, enables easy cleanup, maintains clear separation between human-authored and agent-generated content.
-</workspace_organization>
+**Rules:** NEVER create outline-related temporal files outside `.outline/` | Clean up after task completion | Use `/tmp` for scratch work not part of the outline workflow
+</temporal_files_organization>
 
 <git_commit_strategy>
 **Atomic Commit Protocol:** One logical change = One commit. Each type-classified, independently testable, reversible.
@@ -309,8 +295,8 @@ Semantic diff tool. Tree-sitter based. Use for post-transform verification. See 
 **Good Coding Paradigms:**
 
 **Verification & Correctness:**
-- **Formal Verification:** Prefer formal verification design before implementation. Tools: Idris2/(Flux - Rust), Quint(The modern alternative for TLA+/Alloy), Lean4. Prove invariants, model-check state machines, verify concurrent protocols. Start with lightweight specs, escalate for critical paths.
-- **Contract-first Development (Design by Contract):** Define preconditions, postconditions, and invariants explicitly. Use runtime assertions in dev, compile-time checks where possible. Document contracts in types/signatures. Enforce at module boundaries.
+- **Formal Verification:** Prefer formal verification design before implementation. Tools: Idris2/(Flux - Rust) [Type-driven], Quint [Validation-first], Lean4[Proof-driven]. Prove invariants, model-check state machines, verify concurrent protocols. Start with lightweight specs, escalate for critical paths.
+- **Contract-first Development:** Define preconditions, postconditions, and invariants explicitly. Use runtime assertions in dev, compile-time checks where possible. Document contracts in types/signatures. Enforce at module boundaries. [Design-by-contracts]
 - **Property-Based Testing (Optional):** Complement unit tests with generative testing (QuickCheck, Hypothesis, fast-check, jqwik). Test invariants across input space, not just examples. Shrink failing cases automatically.
 
 **Design & Architecture:**
