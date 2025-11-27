@@ -128,23 +128,24 @@ Default to research over action. Do not jump into implementation unless clearly 
 </quickstart_workflow>
 
 <surgical_editing_workflow>
-**Find → Copy → Paste:** Locate precisely, copy minimal context, transform, paste surgically.
+**Find → Copy → Paste → Verify:** Locate precisely, copy minimal context, transform, paste surgically, verify semantically.
 
 **Step 1: Find** – ast-grep (code structure), rg (text), fd (files), awk (line ranges)
 **Step 2: Copy** – Extract minimal context: `Read(file.ts, offset=100, limit=10)`, `ast-grep -p 'pattern' -C 3`, `rg "pattern" -A 2 -B 2`
 **Step 3: Paste** – Apply surgically: `ast-grep -p 'old($A)' -r 'new($A)' -U`, `Edit(file.ts, line=105)`, `awk '{gsub(/old/,"new")}1' file > tmp && mv tmp file`
+**Step 4: Verify** – Semantic diff review: `difft --display inline original modified` (advisory, warn if chunks > threshold)
 
 **Patterns:** Multi-Location (store locations, copy/paste each) | Single Change Multiple Pastes (copy once, paste everywhere) | Parallel Ops (execute independent entries simultaneously) | Staged (sequential for dependencies)
 
-**Principles:** Precision > Speed | Preview > Hope | Surgical > Wholesale | Locate → Copy → Paste | Minimal Context
+**Principles:** Precision > Speed | Preview > Hope | Surgical > Wholesale | Locate → Copy → Paste → Verify | Minimal Context
 </surgical_editing_workflow>
 
 ## PRIMARY DIRECTIVES
 
 <must>
-**Tool Selection:** 1) ast-grep (AG) [HIGHLY PREFERRED]: AST-based, 90% error reduction, 10x accurate. 2) Edit suite: File edits, multi-file changes. 3) rg: Text/comments/strings. 4) fd: File discovery. 5) lsd: Directory listing.
+**Tool Selection:** 1) ast-grep (AG) [HIGHLY PREFERRED]: AST-based, 90% error reduction, 10x accurate. 2) Edit suite: File edits, multi-file changes. 3) rg: Text/comments/strings. 4) fd: File discovery. 5) lsd: Directory listing. 6) tokei: Code metrics/scope.
 
-**Selection guide:** Code pattern → ast-grep | Simple line edit → AG/Edit | Multi-file atomic → Edit | Non-code → Edit | Text/comments → rg
+**Selection guide:** Code pattern → ast-grep | Simple line edit → AG/Edit | Multi-file atomic → Edit | Non-code → Edit | Text/comments → rg | Scope analysis → tokei
 
 **Thinking tools:** sequential-thinking [ALWAYS USE] for decomposition/dependencies; actor-critic-thinking for alternatives; shannon-thinking for uncertainty/risk
 
@@ -296,11 +297,19 @@ Modern ls replacement. **NEVER use ls—always lsd.**
 ### 4) fd (FD) [MANDATORY]
 Modern find replacement. **NEVER use find—always fd.**
 
+### 5) tokei [CODE METRICS]
+LOC/blanks/comments by language. Use for scope classification before editing. See Quick Reference for commands.
+
+### 6) difft (DIFFTASTIC) [VERIFICATION]
+Semantic diff tool. Tree-sitter based. Use for post-transform verification. See Quick Reference for commands.
+
 ### Quick Reference
 **Code search:** `ast-grep -p 'function $NAME($ARGS) { $$$ }' -l js -C 3` (HIGHLY PREFERRED) | Fallback: `rg 'TODO' -A 5`
 **Code editing:** `ast-grep -p 'old($ARGS)' -r 'new($ARGS)' -l js -C 2` (preview) then `-U` (apply) | Also first-tier: Edit suite
 **File discovery:** `fd -e py`
 **Directory listing:** `lsd --tree --depth 3`
+**Code metrics:** `tokei src/` | JSON: `tokei --output json | jq '.Total.code'`
+**Verification:** `difft --display inline original modified` | JSON: `DFT_UNSTABLE=yes difft --display json A B`
 </code_tools>
 
 ## Verification & Refinement
@@ -323,6 +332,13 @@ Modern find replacement. **NEVER use find—always fd.**
 **Resilience Tactics:** Dry-run first, Checkpoint frequently, Maintain rollback plan, Test on subset, Verify incrementally
 **Context Preservation:** Track Working Set, Dependencies, State, Assumptions, Recovery Points
 </verification_refinement>
+
+<verification_protocol>
+**Post-Transform Verification (Advisory):**
+1. Transform: `ast-grep -p 'old' -r 'new' -U`
+2. Verify: `difft --display inline original modified`
+3. Warn thresholds: MICRO(5), SMALL(15), MEDIUM(50) chunks
+</verification_protocol>
 
 ## UI/UX Design Guidelines
 
@@ -438,7 +454,14 @@ Hard requirement. Diagrams foundational to correct implementation.
 <decision_heuristics>
 **Research vs. Act:** Research: unfamiliar code, unclear dependencies, high risk, confidence <0.5, multiple solutions | Act: familiar patterns, clear impact, low risk, confidence >0.7, single solution
 
-**Tool Selection:** ast-grep (code structure, refactoring, bulk transforms) | ripgrep (text/comments/strings, non-code) | awk (column extraction, line ranges, text regex) | Combined (multi-stage via fd/rg/xargs pipelines)
+**Tool Selection:** ast-grep (code structure, refactoring, bulk transforms) | ripgrep (text/comments/strings, non-code) | awk (column extraction, line ranges, text regex) | tokei (scope assessment) | Combined (multi-stage via fd/rg/xargs pipelines)
+
+**Scope Assessment (tokei-driven):** Run `tokei <target> --output json | jq '.Total.code'` before editing to select strategy:
+- **Micro** (<500 LOC): Direct edit, single-file focus, minimal verification
+- **Small** (500-2K LOC): Progressive refinement, 2-3 file scope, standard verification
+- **Medium** (2K-10K LOC): Multi-agent parallel, dependency mapping required, staged rollout
+- **Large** (10K-50K LOC): Research-first, architecture review, incremental with checkpoints
+- **Massive** (>50K LOC): Decompose to subsystems, formal planning, multi-phase execution
 
 **Break Down vs. Direct:** Break: >5 steps, dependencies exist, risk >20, complexity >6, confidence <0.6 | Direct: atomic task, no dependencies, risk <10, complexity <3, confidence >0.8
 
