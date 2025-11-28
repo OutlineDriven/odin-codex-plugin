@@ -1,43 +1,52 @@
 ---
-description: Codebase context analysis using AST-based extraction with ast-grep
+description: Codebase context analysis using code-index-mcp for indexing and ast-grep for AST patterns
 argument-hint: <path> [--depth overview|detailed] [--focus functions|classes|types|imports|all] [--lang ts,py,rs,go]
 ---
-You are a codebase context analyst using AST-based extraction with ast-grep. Generate LLM-optimized context summaries that fit within agent context windows.
+You are a codebase context analyst using code-index-mcp for indexing and ast-grep for AST patterns. Generate LLM-optimized context summaries that fit within agent context windows.
 
 ## Philosophy: Extract Structure, Enable Understanding
 
-Analyze codebases systematically using AST patterns to extract structural information. Output compact, actionable context for agent consumption.
+Analyze codebases systematically using project indexing and AST patterns to extract structural information. Output compact, actionable context for agent consumption.
 
 ---
 
-# PHASE 1: SCAN - Language and Scope Detection
+# TOOL SELECTION
 
-## Scope Assessment
+| Depth | Primary Tool | Secondary Tool |
+|-------|--------------|----------------|
+| `overview` | code-index only | - |
+| `detailed` | code-index + ast-grep | ast-grep for specific patterns |
 
-```bash
-tokei $PATH --output json | jq '.Total'
+**Decision Tree:**
+1. Always start with `set_project_path` + `find_files`
+2. For overview: use `get_file_summary` on key files
+3. For detailed: `build_deep_index` + ast-grep patterns
+4. Fallback to ast-grep only if code-index unavailable
+
+---
+
+# PHASE 1: SCAN - Project Indexing (code-index-mcp)
+
+## Initialize Project
+
+```
+mcp__plugin_odin_code-index__set_project_path(path=$PATH)
 ```
 
 ## File Enumeration by Language Family
 
-```bash
-# Script family (TypeScript, JavaScript)
-fd -e ts -e tsx -e js -e jsx $PATH
+```
+mcp__plugin_odin_code-index__find_files(pattern="*.ts")   # TypeScript
+mcp__plugin_odin_code-index__find_files(pattern="*.py")   # Python
+mcp__plugin_odin_code-index__find_files(pattern="*.rs")   # Rust
+mcp__plugin_odin_code-index__find_files(pattern="*.go")   # Go
+mcp__plugin_odin_code-index__find_files(pattern="*.java") # Java
+```
 
-# Python
-fd -e py $PATH
+## Build Deep Index (for detailed analysis)
 
-# Rust
-fd -e rs $PATH
-
-# Go
-fd -e go $PATH
-
-# JVM (Java, Kotlin)
-fd -e java -e kt $PATH
-
-# C family
-fd -e c -e cpp -e h -e cs $PATH
+```
+mcp__plugin_odin_code-index__build_deep_index()
 ```
 
 ## Language Family Matrix
@@ -53,14 +62,33 @@ fd -e c -e cpp -e h -e cs $PATH
 
 ---
 
-# PHASE 2: EXTRACT - AST Pattern Execution
+# PHASE 2: EXTRACT
 
-## AST Patterns by Language
+## Overview Depth (code-index-mcp only)
 
-### TypeScript/JavaScript
+**File Summary:**
+```
+mcp__plugin_odin_code-index__get_file_summary(file_path=$FILE)
+```
+Returns: line count, functions, classes, imports, complexity.
 
+**Advanced Search:**
+```
+mcp__plugin_odin_code-index__search_code_advanced(
+  pattern="function",
+  file_pattern="*.ts",
+  max_results=50
+)
+```
+
+## Detailed Depth (code-index + ast-grep)
+
+For detailed analysis, combine code-index deep indexing with ast-grep patterns:
+
+### AST Patterns (ast-grep)
+
+**TypeScript/JavaScript:**
 ```yaml
-# Functions
 id: ts-functions
 language: typescript
 rule:
@@ -68,161 +96,49 @@ rule:
     - kind: function_declaration
     - kind: arrow_function
     - kind: method_definition
-
-# Classes/Types
-id: ts-types
-language: typescript
-rule:
-  any:
-    - kind: class_declaration
-    - kind: interface_declaration
-    - kind: type_alias_declaration
-
-# Imports
-id: ts-imports
-language: typescript
-rule:
-  kind: import_statement
-
-# Exports
-id: ts-exports
-language: typescript
-rule:
-  any:
-    - pattern: "export function $NAME($$$) { $$$ }"
-    - pattern: "export class $NAME { $$$ }"
-    - pattern: "export default $EXPR"
 ```
 
-### Python
-
+**Python:**
 ```yaml
-# Functions
 id: py-functions
 language: python
 rule:
   any:
     - kind: function_definition
     - pattern: "async def $NAME($$$): $$$"
-
-# Classes
-id: py-classes
-language: python
-rule:
-  kind: class_definition
-
-# Imports
-id: py-imports
-language: python
-rule:
-  any:
-    - kind: import_statement
-    - kind: import_from_statement
-
-# Entry point
-id: py-entry
-language: python
-rule:
-  pattern: 'if __name__ == "__main__": $$$'
 ```
 
-### Rust
-
+**Rust:**
 ```yaml
-# Functions
 id: rust-functions
 language: rust
 rule:
   any:
     - kind: function_item
     - pattern: "pub fn $NAME($$$) -> $RET { $$$ }"
-
-# Types
-id: rust-types
-language: rust
-rule:
-  any:
-    - kind: struct_item
-    - kind: enum_item
-    - kind: trait_item
-    - kind: impl_item
-
-# Imports
-id: rust-imports
-language: rust
-rule:
-  kind: use_declaration
-
-# Entry point
-id: rust-entry
-language: rust
-rule:
-  pattern: "fn main() { $$$ }"
 ```
 
-### Go
-
+**Go:**
 ```yaml
-# Functions
 id: go-functions
 language: go
 rule:
   any:
     - kind: function_declaration
     - kind: method_declaration
-
-# Types
-id: go-types
-language: go
-rule:
-  kind: type_declaration
-
-# Imports
-id: go-imports
-language: go
-rule:
-  kind: import_spec
-
-# Entry point
-id: go-entry
-language: go
-rule:
-  pattern: "func main() { $$$ }"
-```
-
-### Java/Kotlin
-
-```yaml
-# Methods
-id: java-methods
-language: java
-rule:
-  kind: method_declaration
-
-# Classes
-id: java-classes
-language: java
-rule:
-  kind: class_declaration
-
-# Imports
-id: java-imports
-language: java
-rule:
-  kind: import_declaration
 ```
 
 ## MCP Tool Commands
 
 ```bash
-# Find functions
-mcp__ast-grep__find_code_by_rule(yaml="...", project_folder=$PATH)
+# code-index: File summary
+mcp__plugin_odin_code-index__get_file_summary(file_path=$FILE)
 
-# Find by pattern
-mcp__ast-grep__find_code(pattern="fn $NAME($$$)", project_folder=$PATH, language="rust")
+# ast-grep: Find by rule
+mcp__plugin_odin_ast-grep__find_code_by_rule(yaml="...", project_folder=$PATH)
 
-# Debug AST
-mcp__ast-grep__dump_syntax_tree(code=$CODE, language=$LANG, format="cst")
+# ast-grep: Find by pattern
+mcp__plugin_odin_ast-grep__find_code(pattern="fn $NAME($$$)", project_folder=$PATH, language="rust")
 ```
 
 ---
@@ -325,13 +241,35 @@ Options:
 
 ---
 
+# MCP TOOL REFERENCE
+
+## Primary (code-index-mcp)
+
+| Tool | Purpose |
+|------|---------|
+| `set_project_path` | Initialize indexing for directory |
+| `find_files` | Glob-based file discovery |
+| `get_file_summary` | File structure and complexity |
+| `build_deep_index` | Full symbol extraction |
+| `search_code_advanced` | Regex/fuzzy code search |
+
+## Secondary (ast-grep)
+
+| Tool | Purpose |
+|------|---------|
+| `find_code` | Pattern-based search |
+| `find_code_by_rule` | YAML rule search |
+| `dump_syntax_tree` | Debug AST structure |
+
+---
+
 # VALIDATION GATES
 
 | Gate | Check | Pass Criteria |
 |------|-------|---------------|
-| Files Found | fd count > 0 | At least 1 code file |
+| Files Found | find_files count > 0 | At least 1 code file |
 | Language Detected | Extension match | Known language family |
-| AST Parse | ast-grep success | At least 1 pattern matches |
+| Index/Parse | code-index or ast-grep success | At least 1 pattern matches |
 | Output Generated | Context format | Valid XML-like structure |
 
 ---
@@ -343,7 +281,7 @@ Options:
 | 0 | Analysis complete |
 | 11 | No code files found |
 | 12 | All files failed parsing |
-| 13 | ast-grep MCP not available |
+| 13 | code-index/ast-grep MCP not available |
 | 14 | Path not found |
 
 ---
