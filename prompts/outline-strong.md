@@ -13,14 +13,75 @@ Design all five validation layers FROM REQUIREMENTS simultaneously. Each layer c
 # VERIFICATION STACK
 
 ```
-Layer | Tool      | Catches              | Designed From
-------|-----------|----------------------|---------------
-1     | Idris 2   | Structural errors    | Type constraints
-2     | Quint     | Design flaws         | State requirements
-3     | Lean 4    | Invariant violations | Correctness properties
-4     | deal/etc  | Runtime violations   | API contracts
-5     | pytest/etc| Behavioral bugs      | Acceptance criteria
+Layer | Tool             | Catches              | Designed From
+------|------------------|----------------------|---------------
+0     | Static Assertions| Compile-time errors  | Type/size constraints
+1     | Idris 2          | Structural errors    | Type constraints
+2     | Quint            | Design flaws         | State requirements
+3     | Lean 4           | Invariant violations | Correctness properties
+4     | deal/etc         | Runtime violations   | API contracts
+5     | pytest/etc       | Behavioral bugs      | Acceptance criteria
 ```
+
+---
+
+# LAYER 0: STATIC VERIFICATION (PREFER FIRST)
+
+**Hierarchy**: `Static Assertions (compile-time) > Test/Debug Contracts > Runtime Contracts`
+
+**Principle**: Verify at compile-time before runtime. No runtime contracts for statically provable properties.
+
+## Language Tools
+
+| Language | Static Assertion | Command |
+|----------|------------------|---------|
+| C++ | `static_assert`, `constexpr`, Concepts | `g++ -std=c++20 -c` |
+| TypeScript | `satisfies`, `as const`, `never` | `tsc --strict --noEmit` |
+| Python | `assert_type`, `Final`, `Literal` | `pyright --strict` |
+| Java | Checker Framework | `javac -processor nullness,index` |
+| Rust | `static_assertions` crate | `cargo check` |
+| Kotlin | contracts, sealed classes | `kotlinc -Werror` |
+
+## Examples
+
+**C++ (static_assert + constexpr)**:
+```cpp
+static_assert(sizeof(int) == 4, "int must be 4 bytes");
+constexpr bool validate(size_t size) { return size > 0 && (size & (size-1)) == 0; }
+static_assert(validate(256), "invalid config");
+```
+
+**TypeScript (satisfies + as const)**:
+```typescript
+const config = { port: 3000, host: "localhost" } satisfies ServerConfig;
+const DIRS = ["north", "south"] as const;
+function assertNever(x: never): never { throw new Error(`Unexpected: ${x}`); }
+```
+
+**Python (assert_type + Final + pyright)**:
+```python
+from typing import assert_type, Final, Literal
+x: int = get_value()
+assert_type(x, int)  # pyright error if not int
+MAX_SIZE: Final = 1024
+```
+
+**Rust (static_assertions crate)**:
+```rust
+use static_assertions::{assert_eq_size, assert_impl_all, const_assert};
+assert_eq_size!(u64, usize);
+assert_impl_all!(String: Send, Sync);
+const_assert!(MAX_SIZE > 0);
+```
+
+## When to Use Static vs Runtime
+
+| Property | Static | Runtime |
+|----------|--------|---------|
+| Null/type constraints | Type checker | Never |
+| Size/alignment | `static_assert` / `assert_eq_size!` | Never |
+| Exhaustiveness | Pattern matching + `never` | Never |
+| External data | No | Required |
 
 ---
 

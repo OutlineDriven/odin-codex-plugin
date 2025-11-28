@@ -17,16 +17,97 @@ HODD-RUST merges: Type-driven + Spec-first + Proof-driven + Design-by-contracts
 # VERIFICATION STACK
 
 ```
-Tier | Tool        | Catches              | When to Use
------|-------------|----------------------|------------------
-0    | rustfmt     | Style violations     | Always
-0    | clippy      | Common mistakes      | Always
-1    | Miri        | Undefined behavior   | Local debugging ONLY
-2    | Loom        | Race conditions      | Concurrent code
-3    | Flux        | Type refinement      | Numeric constraints
-4    | contracts   | Contract violations  | API boundaries
-5    | Kani        | Logic errors         | Critical algorithms
-6    | Lean4/Quint | Design flaws         | Complex protocols
+Tier | Tool              | Catches              | When to Use
+-----|-------------------|----------------------|------------------
+0    | rustfmt           | Style violations     | Always
+0    | clippy            | Common mistakes      | Always
+0.5  | static_assertions | Type/size errors     | Compile-time provable
+1    | Miri              | Undefined behavior   | Local debugging ONLY
+2    | Loom              | Race conditions      | Concurrent code
+3    | Flux              | Type refinement      | Numeric constraints
+4    | contracts         | Contract violations  | API boundaries
+5    | Kani              | Logic errors         | Critical algorithms
+6    | Lean4/Quint       | Design flaws         | Complex protocols
+```
+
+---
+
+# STATIC ASSERTIONS FIRST (PREFER OVER CONTRACTS)
+
+**Principle**: Use compile-time static assertions before runtime contracts. If a property can be verified at compile time, do NOT add a runtime contract for it.
+
+**Hierarchy**: `Static Assertions > Debug/Test Contracts > Runtime Contracts`
+
+## Installation
+
+```toml
+# Cargo.toml
+[dependencies]
+static_assertions = "1.1"
+```
+
+## Usage
+
+```rust
+use static_assertions::{assert_eq_size, assert_impl_all, const_assert};
+
+// Size constraints - checked at compile time
+assert_eq_size!(u64, usize);  // Ensure 64-bit platform
+assert_eq_size!([u8; 16], u128);
+
+// Trait bounds - verified statically
+assert_impl_all!(String: Send, Sync, Clone);
+assert_impl_all!(Buffer: Send);
+
+// Const assertions - arbitrary boolean conditions
+const_assert!(std::mem::size_of::<usize>() >= 4);
+const_assert!(MAX_BUFFER_SIZE > 0);
+const_assert!(MAX_BUFFER_SIZE <= 1024 * 1024);  // 1MB limit
+```
+
+## Const Functions for Compile-Time Validation
+
+```rust
+const fn validate_config(size: usize, alignment: usize) -> bool {
+    size > 0 && size.is_power_of_two() && alignment > 0
+}
+
+const BUFFER_SIZE: usize = 256;
+const ALIGNMENT: usize = 8;
+
+// Fails compilation if validation fails
+const _: () = assert!(validate_config(BUFFER_SIZE, ALIGNMENT));
+```
+
+## When to Use Static vs Contracts
+
+| Property | Static | test_* | debug_* | Always-on |
+|----------|--------|--------|---------|-----------|
+| Type size/alignment | `assert_eq_size!` | - | - | - |
+| Trait implementations | `assert_impl_all!` | - | - | - |
+| Const value bounds | `const_assert!` | - | - | - |
+| Generic const params | `const { assert!(...) }` | - | - | - |
+| Expensive O(n)+ verification | - | `test_ensures` | - | - |
+| Internal state invariants | - | - | `debug_invariant` | - |
+| Public API input validation | - | - | - | `requires` |
+| Safety-critical postconditions | - | - | - | `ensures` |
+
+## Decision Flow
+
+```
+Can type system encode it? ──yes──> Use types (typestate, newtype)
+         │no
+         v
+Verifiable at compile-time? ──yes──> static_assertions / const_assert!
+         │no
+         v
+Expensive O(n)+ check? ──yes──> test_* (test builds only)
+         │no
+         v
+Internal development aid? ──yes──> debug_* (debug builds only)
+         │no
+         v
+Must enforce in production? ──yes──> Always-on contracts
 ```
 
 ---
