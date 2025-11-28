@@ -77,3 +77,7 @@ args = ["-y", "server-shannon-thinking@latest"]
 [mcp_servers.time]
 command = "uvx"
 args = ["mcp-server-time"]
+
+[mcp_servers.code-index]
+command = "uvx"
+args = ["code-index-mcp"]

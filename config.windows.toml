@@ -73,3 +73,7 @@ args = [
 [mcp_servers.ripgrep]
 command = "cmd"
 args = ["-c", "npx -y mcp-ripgrep@latest"]
+
+[mcp_servers.code-index]
+command = "cmd"
+args = ["-c", "uvx code-index-mcp"]
