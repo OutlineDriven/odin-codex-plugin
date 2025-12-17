@@ -160,16 +160,30 @@ In colocated mode, jj and Git share the same backend. Every jj change IS a Git c
 </quickstart_workflow>
 
 <surgical_editing_workflow>
-**Find → Copy → Paste → Verify:** Locate precisely, copy minimal context, transform, paste surgically, verify semantically.
+**Find -> Copy -> Paste -> Verify:** Locate precisely, copy minimal context, transform, paste surgically, verify semantically.
 
-**Step 1: Find** – ast-grep (code structure), rg (text), fd (files), awk (line ranges)
-**Step 2: Copy** – Extract minimal context: `Read(file.ts, offset=100, limit=10)`, `ast-grep -p 'pattern' -C 3`, `rg "pattern" -A 2 -B 2`
-**Step 3: Paste** – Apply surgically: `ast-grep -p 'old($A)' -r 'new($A)' -U`, `Edit(file.ts, line=105)`, `awk '{gsub(/old/,"new")}1' file > tmp && mv tmp file`
-**Step 4: Verify** – Semantic diff review: `difft --display inline original modified` (advisory, warn if chunks > threshold)
+**1. Find (Structural & Precise)**
+- **AST Pattern:** `ast-grep run -p 'function $N($$$A) { $$$B }' -l ts`
+- **Ambiguity:** `ast-grep scan --inline-rules 'rule: { pattern: { context: "fn f() { $A }", selector: "call_expression" } }' -l rust`
+- **Scope Limit:** `ast-grep scan --inline-rules 'rule: { pattern: "return $A", inside: { kind: "function", regex: "^test" } }'`
 
-**Patterns:** Multi-Location (store locations, copy/paste each) | Single Change Multiple Pastes (copy once, paste everywhere) | Parallel Ops (execute independent entries simultaneously) | Staged (sequential for dependencies)
+**2. Copy (Targeted Extraction)**
+- **Context:** `ast-grep run -p '$PAT' -C 3` (surrounding lines)
+- **Lines:** `sed -n '10,20p' file.ts` (when lines are known)
 
-**Principles:** Precision > Speed | Preview > Hope | Surgical > Wholesale | Locate → Copy → Paste → Verify | Minimal Context
+**3. Paste (Atomic Transformation)**
+- **Rewrite:** `ast-grep run -p '$O.old($A)' -r '$O.new({ val: $A })' -U`
+- **Complex:** `ast-grep scan --inline-rules 'rule: { ... } transform: { ... } fix: "..."' -U`
+- **Manual:** Edit suite (hunk-based) for non-pattern multi-file edits.
+
+**4. Verify (Semantic Integrity)**
+- **Diff:** `difft --display inline original modified` (AST-aware, ignores whitespace)
+- **Check:** Re-run `ast-grep` or `rg` to ensure patterns are resolved.
+
+**Tactics:**
+- **Rename:** `ast-grep run -p 'class $N { $$$ }' -r 'class ${N}V2 { $$$ }'`
+- **Delete:** `ast-grep run -p 'console.log($$$)' -r '' -U`
+- **Migrate:** `ast-grep run -p '$A.done($B)' -r 'await $A; $B()'`
 </surgical_editing_workflow>
 
 ## PRIMARY DIRECTIVES
@@ -283,6 +297,12 @@ AST-based search/transform. Understands code syntax/structure (not just text). L
 **Workflow:** Search → Preview (-C) → Apply (-U) [never skip preview]
 
 **Pattern Syntax:** Valid meta-vars: `$META`, `$META_VAR`, `$_`, `$_123` (uppercase) | Invalid: `$invalid` (lowercase), `$123` (starts with number), `$KEBAB-CASE` (dash) | Single node: `$VAR`, Multiple: `$$$ARGS`, Non-capturing: `$_VAR` | Strictness: cst (strictest), smart (default), ast, relaxed, signature (permissive)
+
+**Power Examples:**
+- **Simple:** `ast-grep run -p 'expect($A).toBe($B)' -r 'assert.equal($A, $B)' -l ts -U`
+- **Ambiguous:** `ast-grep scan --inline-rules 'rule: { pattern: { context: "fn f() { $A }", selector: "call_expression" } }' -l rust`
+- **Inside:** `ast-grep scan --inline-rules 'rule: { pattern: "return $A", inside: { kind: "function", pattern: { regex: "^test" } } }'`
+- **Strict:** `ast-grep scan --inline-rules 'rule: { pattern: "$A + $B", constraints: { A: { kind: "string" } } }'`
 
 **Best Practices:** Always `-C 3` before `-U` | Specify `-l language` | Invalid pattern? Use pattern object with context+selector | Ambiguous C/Go? Add context+selector | Missing stopBy:end with inside/has? Add for full traversal | Performance: Combine kind+regex, prefer specific patterns, test on small files | Debug: `ast-grep -p 'pattern' -l js --debug-query=cst`
 
