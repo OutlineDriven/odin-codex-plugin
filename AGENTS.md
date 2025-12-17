@@ -72,23 +72,39 @@ Default to research over action. Do not jump into implementation unless clearly 
 **Rules:** NEVER create outline-related temporal files outside `.outline/` | Clean up after task completion | Use `/tmp` for scratch work not part of the outline workflow
 </temporal_files_organization>
 
-<git_commit_strategy>
-**Atomic Commit Protocol:** One logical change = One commit. Each type-classified, independently testable, reversible.
+<jujutsu_vcs_strategy>
+**Jujutsu (jj) VCS Strategy:**
+
+**Core Philosophy:** "Everything is a Commit". The working copy is a commit (`@`). There is no staging area.
+**Mandate:** Use `jj` for ALL local version control operations.
+
+**Workflow:**
+1. **Start:** `jj new <parent>` (default `@`) to start a new logical change.
+2. **Edit:** Modify files. `jj` automatically snapshots the working copy.
+3. **Verify:** `jj st` (status) and `jj diff` (review changes).
+4. **Describe:** `jj describe -m "<type>[scope]: <description>"` to set the commit message (Conventional Commits).
+5. **Refine:**
+   - `jj squash`: To fold working copy changes into the parent commit.
+   - `jj split`: To break a change into multiple changes.
+6. **Push:** `jj git push`. (Use `jj git push --change @` to push the specific current change).
+
+**Recovery:**
+- **Undo:** `jj undo` (instant undo of ANY operation).
+- **Log:** `jj op log` (view operation history).
+- **Evolution:** `jj evolog` (view history of a specific change ID).
 
 **Commit Types:** feat (MINOR), fix (PATCH), build, chore, ci, docs, perf, refactor, style, test
 
 **Separation Rules (NON-NEGOTIABLE):** NEVER mix types/scopes | NEVER commit incomplete work | ALWAYS separate features/fixes/refactors | ALWAYS commit logical units independently
 
-**Workflow:** `git status && git diff` → `git add -p <file>` → `git diff --cached && git diff` → `git stash --keep-index && npm test && git stash pop` → `git commit -m "<type>[scope]: <description>"`
-
 **Format:** `<type>[optional scope]: <description>` + optional body/footers
 
-**Structure:** type (required), scope (optional, parentheses), description (required, lowercase after colon, imperative, max 72 chars, NO emojis), body (optional, explains "why"), footers (optional, git trailer format), BREAKING CHANGE (use ! or footer)
+**Structure:** type (required), scope (optional, parentheses), description (required, lowercase after colon, imperative, max 72 chars, NO emojis), body (optional, explains "why"), BREAKING CHANGE (use ! or footer)
 
 **Examples:** `feat(lang): add Polish language` | `fix(parser): correct array parsing issue` | `feat(api)!: send email when product shipped` | BAD: `feat: add profile, fix login, refactor auth` (mixed types—FORBIDDEN)
 
-**Enforcement:** Each commit must build successfully, pass all tests, represent a complete logical unit.
-</git_commit_strategy>
+**Enforcement:** Each change must be atomic, buildable, and testable.
+</jujutsu_vcs_strategy>
 
 <quickstart_workflow>
 1. **Requirements**: Brief checklist (3-10 items), note constraints/unknowns
@@ -120,13 +136,17 @@ Default to research over action. Do not jump into implementation unless clearly 
 ## PRIMARY DIRECTIVES
 
 <must>
-**Tool Selection:** 1) ast-grep (AG) [HIGHLY PREFERRED]: AST-based, 90% error reduction, 10x accurate. 2) Edit suite: File edits, multi-file changes. 3) rg: Text/comments/strings. 4) fd: File discovery. 5) lsd: Directory listing. 6) tokei: Code metrics/scope.
+**Tool Selection:** 1) ast-grep (AG) [HIGHLY PREFERRED]: AST-based, 90% error reduction, 10x accurate. 2) Edit suite: File edits, multi-file changes. 3) rg: Text/comments/strings. 4) fd: File discovery. 5) lsd: Directory listing. 6) tokei: Code metrics/scope. 7) jj: Version control (MANDATORY over git).
 
 **Selection guide:** Code pattern → ast-grep | Simple line edit → AG/Edit | Multi-file atomic → Edit | Non-code → Edit | Text/comments → rg | Scope analysis → tokei
 
 **Thinking tools:** sequential-thinking [ALWAYS USE] for decomposition/dependencies; actor-critic-thinking for alternatives; shannon-thinking for uncertainty/risk
 
 **Banned (HARD ENFORCEMENT - VIOLATIONS REJECTED):**
+- `git status` / `git log` / `git diff` - USE `jj st`, `jj log`, `jj diff` INSTEAD
+- `git commit` / `git add` - USE `jj describe` (snapshots are automatic) INSTEAD
+- `git checkout` / `git switch` - USE `jj new` or `jj edit` INSTEAD
+- `git rebase` / `git merge` - USE `jj rebase` or `jj new <rev1> <rev2>` INSTEAD
 - `grep -r` / `grep -R` / `grep --recursive` - USE `rg` or `ast-grep` INSTEAD
 - `sed -i` / `sed --in-place` - USE `ast-grep -U` or Edit tool INSTEAD
 - `sed -e` for code transforms - USE `ast-grep` INSTEAD
@@ -134,6 +154,8 @@ Default to research over action. Do not jump into implementation unless clearly 
 - `cat` for file reading - USE Read tool INSTEAD
 - Text-based grep for code patterns - USE `ast-grep` INSTEAD
 - `perl` / `perl -i` / `perl -pe` - USE `ast-grep -U` or `awk` INSTEAD
+
+**Exception:** `git` allowed ONLY for `jj git init` or debugging when jj fails.
 
 **Enforcement mechanism:** Any command matching these patterns MUST be rejected and rewritten using approved tools. No exceptions.
 
@@ -403,7 +425,7 @@ Don't hold back. Give it your all.
 
 **Cleanup:** ALWAYS delete temporary files/docs if no longer needed. Leave workspace clean.
 
-**Git Commit:** MANDATORY atomic commits following Git Commit Strategy. Each type-classified, focused, testable, reversible. NO mixed-type/scope commits. ALWAYS Conventional Commits format.
+**jj Commit:** MANDATORY atomic commits following jujutsu_vcs_strategy. Each change type-classified, focused, testable, reversible. NO mixed-type/scope changes. ALWAYS Conventional Commits format with `jj describe`.
 
 **Code quality checklist:** Correctness, Performance, Security, Maintainability, Tidiness
 </always>
