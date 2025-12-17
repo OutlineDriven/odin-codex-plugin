@@ -31,6 +31,8 @@ Think systemically using SHORT-form KEYWORDS for efficient internal reasoning. U
 
 **Batch patterns:** Independent ops (one batch): `[read(F₁), read(F₂), ..., read(Fₙ)]` | Dependent ops (2+ batches): Batch 1 → Batch 2 → ... → Batch K
 
+**Context Isolation:** Create unique jj change per subtask: `jj new <base> -m '<Task>'` for isolated contexts.
+
 **FORBIDDEN:** Guessing parameters requiring other results; Ignoring logical order; Batching dependent operations
 </orchestration>
 
@@ -79,15 +81,47 @@ Default to research over action. Do not jump into implementation unless clearly 
 **Mandate:** Use `jj` for ALL local version control operations.
 **Initialization:** `jj git init --colocate` (if jj is not initialized, use this command)
 
+**Git Interoperability (Colocated Mode):**
+In colocated mode, jj and Git share the same backend. Every jj change IS a Git commit. Auto-import/export occurs on every jj command.
+- **Bookmarks = Git Branches:** `jj bookmark` creates named pointers that map directly to Git branches
+- **Every significant change MUST have a bookmark** for Git branch visibility
+- **`jj describe` updates commit message** of existing Git commit (does NOT create new branch)
+- **`jj git export`** explicitly syncs jj state to Git refs (usually automatic in colocated mode)
+
+**Role Separation (Agent Proposes, Human Confirms):**
+- **Agents (jj):** All VCS operations via jj. Create bookmarks for all work. Prepare merge-ready branches.
+- **Human (git):** Reviews and merges via standard git commands. No jj knowledge required.
+- **Bridge:** Bookmarks = Git branches. Colocated mode ensures instant visibility.
+
+**Agent Responsibilities:**
+- Create bookmark immediately when starting work: `jj bookmark create <feature-branch> -r @`
+- Rebase onto target before proposing: `jj rebase -d <target-branch>` (ensures clean merge)
+- Describe with clear conventional commit messages
+- Push bookmark to remote if collaboration needed: `jj git push --bookmark <name>`
+
+**Human Git Workflow:** `git branch -a` | `git log --all --graph` | `git diff main..<branch>` | `git merge <branch>` | `git branch -d <branch>`
+
 **Workflow:**
 1. **Start:** `jj new <parent>` (default `@`) to start a new logical change.
-2. **Edit:** Modify files. `jj` automatically snapshots the working copy.
-3. **Verify:** `jj st` (status) and `jj diff` (review changes).
-4. **Describe:** `jj describe -m "<type>[scope]: <description>"` to set the commit message (Conventional Commits).
-5. **Refine:**
+2. **Create Bookmark (Git Branch):** `jj bookmark create <branch-name> -r @` to create a Git-visible branch.
+   - MANDATORY for any work intended to be pushed or shared via Git.
+   - Bookmarks auto-move when commits are rewritten (rebase, amend, etc.).
+3. **Edit:** Modify files. `jj` automatically snapshots the working copy.
+4. **Verify:** `jj st` (status) and `jj diff` (review changes).
+5. **Describe:** `jj describe -m "<type>[scope]: <description>"` to set the commit message (Conventional Commits).
+   - This updates the Git commit message. The bookmark (branch) remains pointed at this change.
+6. **Refine:**
    - `jj squash`: To fold working copy changes into the parent commit.
    - `jj split`: To break a change into multiple changes.
-6. **Push:** `jj git push`. (Use `jj git push --change @` to push the specific current change).
+7. **Push:** `jj git push --bookmark <branch-name>` to push the specific bookmark (branch) to remote.
+   - Alternative: `jj git push --change @` pushes current change, auto-creating remote bookmark.
+
+**Bookmark Management:**
+- `jj bookmark list` - List all bookmarks (local and remote)
+- `jj bookmark create <name> -r <rev>` - Create bookmark at revision
+- `jj bookmark move <name> --to <rev>` - Move bookmark to different revision
+- `jj bookmark delete <name>` - Delete local bookmark
+- `jj bookmark track <name>@<remote>` - Track remote bookmark locally
 
 **Recovery:**
 - **Undo:** `jj undo` (instant undo of ANY operation).
@@ -104,7 +138,11 @@ Default to research over action. Do not jump into implementation unless clearly 
 
 **Examples:** `feat(lang): add Polish language` | `fix(parser): correct array parsing issue` | `feat(api)!: send email when product shipped` | BAD: `feat: add profile, fix login, refactor auth` (mixed types—FORBIDDEN)
 
-**Enforcement:** Each change must be atomic, buildable, and testable.
+**Enforcement:**
+- Each change must be atomic, buildable, and testable
+- Each feature branch MUST have a corresponding bookmark (git visibility)
+- Agent prepares merge-ready state; human confirms via git merge
+- Agent MUST rebase onto target branch before marking work complete
 </jujutsu_vcs_strategy>
 
 <quickstart_workflow>
@@ -264,6 +302,22 @@ LOC/blanks/comments by language. Use for scope classification before editing. Se
 
 ### 6) difft (DIFFTASTIC) [VERIFICATION]
 Semantic diff tool. Tree-sitter based. Use for post-transform verification. See Quick Reference for commands.
+
+### 7) jj (Jujutsu) [VCS]
+Git-compatible VCS. **ALWAYS use `jj` over `git`.** In colocated mode, every jj change IS a Git commit.
+**Key capabilities:**
+- `jj st`: Status. Snapshots working copy.
+- `jj diff`: Diff working copy (or `-r <rev>`).
+- `jj log`: History graph.
+- `jj new <rev>`: Create new change on top of `<rev>`.
+- `jj describe -m "msg"`: Update commit message (updates Git commit).
+- `jj squash`: Move changes into parent (amend).
+- `jj abandon <rev>`: Discard revision.
+- `jj bookmark create <name> -r @`: Create Git branch at current change. [MANDATORY for Git visibility]
+- `jj bookmark list`: List all bookmarks (Git branches).
+- `jj git push --bookmark <name>`: Push specific branch to remote.
+
+**Workflow:** `jj new` -> `jj bookmark create <branch>` -> Edit -> `jj st` -> `jj describe` -> `jj git push --bookmark <branch>`
 
 ### Quick Reference
 **Code search:** `ast-grep -p 'function $NAME($ARGS) { $$$ }' -l js -C 3` (HIGHLY PREFERRED) | Fallback: `rg 'TODO' -A 5`
