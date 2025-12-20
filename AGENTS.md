@@ -75,11 +75,21 @@ Default to research over action. Do not jump into implementation unless clearly 
 </temporal_files_organization>
 
 <jujutsu_vcs_strategy>
-**Jujutsu (jj) VCS Strategy:**
-
-**Core Philosophy:** "Everything is a Commit". The working copy is a commit (`@`). There is no staging area.
+**Jujutsu (jj) Atomic State Management**
+**Philosophy:** The Working Copy (`@`) is *always* a mutable commit. No staging area.
+**Golden Rule:** One Revision = One Logical Atomic Task (Code + Test + Docs).
 **Mandate:** Use `jj` for ALL local version control operations.
 **Initialization:** `jj git init --colocate` (if jj is not initialized, use this command)
+
+**Atomic Commit Protocol:**
+1.  **Isolate:** `jj new <base> -m "feat: <atomic_scope>"` (Fresh context).
+2.  **Iterate:** Modify files. State auto-snapshots into `@`.
+3.  **Refine (The Loop):**
+    *   *Grow Atom:* `jj squash` (Merge recent edits into current revision).
+    *   *Split Atom:* `jj split` (If concerns mix, separate into distinct revisions).
+    *   *Stack:* `jj new` (Create dependent revision on top).
+4.  **Verify:** `jj diff` (Review atom integrity) | `jj st` (Check path status).
+5.  **Publish:** `jj bookmark create <name> -r @` -> `jj git push` (Git Bridge).
 
 **Git Interoperability (Colocated Mode):**
 In colocated mode, jj and Git share the same backend. Every jj change IS a Git commit. Auto-import/export occurs on every jj command.
@@ -123,10 +133,7 @@ In colocated mode, jj and Git share the same backend. Every jj change IS a Git c
 - `jj bookmark delete <name>` - Delete local bookmark
 - `jj bookmark track <name>@<remote>` - Track remote bookmark locally
 
-**Recovery:**
-- **Undo:** `jj undo` (instant undo of ANY operation).
-- **Log:** `jj op log` (view operation history).
-- **Evolution:** `jj evolog` (view history of a specific change ID).
+**Recovery:** `jj undo` (Instant revert) | `jj abandon` (Discard atom) | `jj op log` (View operation history) | `jj evolog` (View change evolution).
 
 **Commit Types:** feat (MINOR), fix (PATCH), build, chore, ci, docs, perf, refactor, style, test
 
@@ -150,7 +157,10 @@ In colocated mode, jj and Git share the same backend. Every jj change IS a Git c
 2. **Context**: Gather only essential context, targeted searches
 3. **Design**: Sketch delta diagrams (architecture, data-flow, concurrency, memory, optimization, tidiness)
 4. **Contract**: Define inputs/outputs, invariants, error modes, 3-5 edge cases
-5. **Implementation**: Preview → Validate → Apply (prefer AG for code, Edit for edits)
+5. **Implementation**:
+    *   **Search**: `ast-grep` to map injection points.
+    *   **Edit**: `ast-grep` (Structure) or Edit suite (Hunk).
+    *   **State**: `jj squash` iteratively to build atomic commit.
 6. **Quality gates**: Build → Lint/Typecheck → Tests → Smoke test
 7. **Completion**: Apply atomic commit strategy, summarize changes, attach diagrams, clean up temp files
 
