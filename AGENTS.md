@@ -89,7 +89,7 @@ Default to research over action. Do not jump into implementation unless clearly 
     *   *Split Atom:* `jj split` (If concerns mix, separate into distinct revisions).
     *   *Stack:* `jj new` (Create dependent revision on top).
 4.  **Verify:** `jj diff` (Review atom integrity) | `jj st` (Check path status).
-5.  **Publish:** `jj bookmark create <name> -r @` -> `jj git push` (Git Bridge).
+5.  **Publish:** `jj bookmark create <branch-name> -r @` -> `jj git push` (Git Bridge). Use Conventional Branch Conventions for branch names.
 
 **Git Interoperability (Colocated Mode):**
 In colocated mode, jj and Git share the same backend. Every jj change IS a Git commit. Auto-import/export occurs on every jj command.
@@ -104,7 +104,7 @@ In colocated mode, jj and Git share the same backend. Every jj change IS a Git c
 - **Bridge:** Bookmarks = Git branches. Colocated mode ensures instant visibility.
 
 **Agent Responsibilities:**
-- Create bookmark immediately when starting work: `jj bookmark create <feature-branch> -r @`
+- Create bookmark immediately when starting work: `jj bookmark create <branch-name> -r @`. Use Conventional Branch Conventions for branch names.
 - Rebase onto target before proposing: `jj rebase -d <target-branch>` (ensures clean merge)
 - Describe with clear conventional commit messages
 - Push bookmark to remote if collaboration needed: `jj git push --bookmark <name>`
@@ -113,7 +113,7 @@ In colocated mode, jj and Git share the same backend. Every jj change IS a Git c
 
 **Workflow:**
 1. **Start:** `jj new <parent>` (default `@`) to start a new logical change.
-2. **Create Bookmark (Git Branch):** `jj bookmark create <branch-name> -r @` to create a Git-visible branch.
+2. **Create Bookmark (Git Branch):** `jj bookmark create <branch-name> -r @` to create a Git-visible branch. Use Conventional Branch Conventions for branch names.
    - MANDATORY for any work intended to be pushed or shared via Git.
    - Bookmarks auto-move when commits are rewritten (rebase, amend, etc.).
 3. **Edit:** Modify files. `jj` automatically snapshots the working copy.
@@ -127,9 +127,9 @@ In colocated mode, jj and Git share the same backend. Every jj change IS a Git c
    - Ask user for target branch (e.g., `main`, `develop`).
    - `jj git fetch` (Refresh remote state).
    - `jj rebase -d <target>@origin` (Merge to target).
-   - `jj bookmark create <type>/<scope> -r @` (e.g., `feat/user-auth`, `fix/login-bug`).
-   - `jj bookmark track <type>/<scope>@origin` (If remote bookmark exists).
-   - `jj git push --bookmark <type>/<scope>` (Transport to Remote).
+   - `jj bookmark create <branch-name> -r @`. Use Conventional Branch Conventions for branch names.
+   - `jj bookmark track <branch-name>@origin` (If remote bookmark exists).
+   - `jj git push --bookmark <branch-name>` (Transport to Remote).
 
 **Bookmark Management:**
 - `jj bookmark list` - List all bookmarks (local and remote)
@@ -348,11 +348,11 @@ Git-compatible VCS. **ALWAYS use `jj` over `git`.** In colocated mode, every jj 
 - `jj describe -m "msg"`: Update commit message (updates Git commit).
 - `jj squash`: Move changes into parent (amend).
 - `jj abandon <rev>`: Discard revision.
-- `jj bookmark create <name> -r @`: Create Git branch at current change. [MANDATORY for Git visibility]
+- `jj bookmark create <branch-name> -r @`: Create Git branch. Use Conventional Branch Conventions for branch names. [MANDATORY for Git visibility]
 - `jj bookmark list`: List all bookmarks (Git branches).
 - `jj git push --bookmark <name>`: Push specific branch to remote.
 
-**Workflow:** `jj new` -> `jj bookmark create <branch>` -> Edit -> `jj st` -> `jj describe` -> `jj git push --bookmark <branch>`
+**Workflow:** `jj new` -> `jj bookmark create <branch-name>` -> Edit -> `jj st` -> `jj describe` -> `jj git push --bookmark <branch-name>`. Use Conventional Branch Conventions for branch names.
 
 ### Quick Reference
 **Code search:** `ast-grep -p 'function $NAME($ARGS) { $$$ }' -l js -C 3` (HIGHLY PREFERRED) | Fallback: `rg 'TODO' -A 5`
