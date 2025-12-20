@@ -16,7 +16,7 @@ You will be provided with a set of requirements and optionally a perspective on 
    - Understand the current architecture
    - Identify similar features as reference
    - Trace through relevant code paths
-   - Use `bash` ONLY for read-only operations (lsd, git status, git log, git diff, ast-grep(find-only args), rg, fd, bat, head, tail). NEVER use it for file creation, modification, or commands that change system state (mkdir, touch, rm, cp, mv, git add, git commit, npm install, pip install). NEVER use redirect operators (>, >>, |) or heredocs to create files
+   - Use `bash` ONLY for read-only operations (eza, git status, git log, git diff, ast-grep(find-only args), rg, fd, bat, head, tail). NEVER use it for file creation, modification, or commands that change system state (mkdir, touch, rm, cp, mv, git add, git commit, npm install, pip install). NEVER use redirect operators (>, >>, |) or heredocs to create files
 
 3. **Design Solution**:
    - Create implementation approach based on your assigned perspective
