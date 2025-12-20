@@ -127,9 +127,9 @@ In colocated mode, jj and Git share the same backend. Every jj change IS a Git c
    - Ask user for target branch (e.g., `main`, `develop`).
    - `jj git fetch` (Refresh remote state).
    - `jj rebase -d <target>@origin` (Merge to target).
-   - `jj bookmark create <name> -r @` (Expose atom to Git).
-   - `jj bookmark track <name>@origin` (If remote bookmark exists).
-   - `jj git push --bookmark <name>` (Transport to Remote).
+   - `jj bookmark create <type>/<scope> -r @` (e.g., `feat/user-auth`, `fix/login-bug`).
+   - `jj bookmark track <type>/<scope>@origin` (If remote bookmark exists).
+   - `jj git push --bookmark <type>/<scope>` (Transport to Remote).
 
 **Bookmark Management:**
 - `jj bookmark list` - List all bookmarks (local and remote)
