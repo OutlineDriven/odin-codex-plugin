@@ -204,9 +204,19 @@ In colocated mode, jj and Git share the same backend. Every jj change IS a Git c
 ## PRIMARY DIRECTIVES
 
 <must>
-**Tool Selection:** 1) ast-grep (AG) [HIGHLY PREFERRED]: AST-based, 90% error reduction, 10x accurate. 2) Edit suite: File edits, multi-file changes. 3) rg: Text/comments/strings. 4) fd: File discovery. 5) eza: Directory listing (--git-ignore default). 6) tokei: Code metrics/scope. 7) jj: Version control (MANDATORY over git).
+**Tool Selection [HIGHEST TIER - use actively]:**
+1) fd + ast-grep [DUAL TOP TIER]:
+   - fd: Scope/discover files FIRST. Use before searches/edits.
+   - ast-grep (AG): AST-based patterns, 90% error reduction, 10x accurate.
+2) Edit suite: File edits, multi-file changes.
+3) rg: Text/comments/strings (after fd scoping).
+4) eza: Directory listing (--git-ignore default).
+5) tokei: Code metrics/scope assessment.
+6) jj: Version control (MANDATORY over git).
 
-**Selection guide:** Code pattern → ast-grep | Simple line edit → AG/Edit | Multi-file atomic → Edit | Non-code → Edit | Text/comments → rg | Scope analysis → tokei
+**Selection guide:** Scope/discover → fd | Code pattern → ast-grep | Simple line edit → AG/Edit | Multi-file atomic → Edit | Non-code → Edit | Text/comments → rg | Scope analysis → tokei
+
+**Workflow:** fd (scope first) → ast-grep/rg (search) → Edit (transform) → jj (commit)
 
 **Thinking tools:** sequential-thinking [ALWAYS USE] for decomposition/dependencies; actor-critic-thinking for alternatives; shannon-thinking for uncertainty/risk
 
@@ -225,6 +235,27 @@ In colocated mode, jj and Git share the same backend. Every jj change IS a Git c
 - `perl` / `perl -i` / `perl -pe` - USE `ast-grep -U` or `awk` INSTEAD
 
 **Enforcement mechanism:** Any command matching these patterns MUST be rejected and rewritten using approved tools. No exceptions.
+
+<fd_first_enforcement>
+**fd-First Scoping [MANDATORY before large operations]:**
+Before executing ast-grep scans, rg searches, or multi-file edits:
+1. **Scope with fd:** `fd -e <ext> [pattern]` to understand target file set
+2. **Validate scope:** Review file count—if >50 files, narrow with `-E`, `--max-depth`, or patterns
+3. **Then use ast-grep/rg:** Run on the identified scope/directories
+
+**Enforcement triggers:**
+- Codebase-wide refactoring → fd scope check REQUIRED
+- Unknown file locations → fd discovery REQUIRED
+- Pattern search across >3 directories → fd first REQUIRED
+- Multi-file edits → fd to preview scope REQUIRED
+
+**fd patterns:**
+- `fd -e py -E venv -E __pycache__` (Python, exclude noise)
+- `fd -e rs --max-depth 3` (Rust, limit depth)
+- `fd -g '*.test.ts'` (glob pattern for test files)
+- `fd -e js --type f` (only files, no dirs)
+- `fd . src/components -e tsx` (scope to directory)
+</fd_first_enforcement>
 
 **Workflow:** Preview → Validate → Apply (no blind edits)
 **Diagrams (INTERNAL):** Architecture, data-flow, concurrency, memory, optimization, tidiness. Reason through in thinking process for non-trivial changes.
@@ -329,8 +360,27 @@ Workspace editing tools. Excellent for straightforward edits, multi-file changes
 ### 3) eza [MANDATORY]
 Modern ls replacement. **NEVER use ls—always eza --git-ignore.**
 
-### 4) fd (FD) [MANDATORY]
-Modern find replacement. **NEVER use find—always fd.**
+### 4) fd [SCOPE FIRST - MANDATORY]
+Modern find replacement - use FIRST before large operations to scope target files.
+*   **Find files:** `fd -e py -E venv`
+*   **Find in directory:** `fd . src/ -e ts`
+*   **Glob pattern:** `fd -g '*.test.ts'`
+*   **Count scope:** `fd -e js | wc -l`
+*   **Limit depth:** `fd -e rs --max-depth 3`
+
+**Surgical patterns:**
+*   **Execute per file:** `fd -e rs -x rustfmt {}`
+*   **Batch execute:** `fd -e py -X black`
+*   **With awk extraction:** `fd -e log -x awk '/ERROR/ {print FILENAME": "$0}' {}`
+*   **Recent files:** `fd -e ts --changed-within 1d`
+*   **Size filter:** `fd -e json -S +1k` (files >1KB)
+
+**fd + awk patterns:**
+*   **Extract from matched files:** `fd -e csv -x awk -F',' '{print $1, $3}' {}`
+*   **Count lines per file:** `fd -e py -x awk 'END {print FILENAME": "NR" lines"}' {}`
+*   **Filter content:** `fd -e log -x awk '/WARN|ERROR/ {c++} END {print FILENAME": "c}' {}`
+
+**NEVER use find—always fd.**
 
 ### 5) tokei [CODE METRICS]
 LOC/blanks/comments by language. Use for scope classification before editing. See Quick Reference for commands.
@@ -357,7 +407,11 @@ Git-compatible VCS. **ALWAYS use `jj` over `git`.** In colocated mode, every jj 
 ### Quick Reference
 **Code search:** `ast-grep -p 'function $NAME($ARGS) { $$$ }' -l js -C 3` (HIGHLY PREFERRED) | Fallback: `rg 'TODO' -A 5`
 **Code editing:** `ast-grep -p 'old($ARGS)' -r 'new($ARGS)' -l js -C 2` (preview) then `-U` (apply) | Also first-tier: Edit suite
-**File discovery:** `fd -e py`
+**fd (file discovery - use FIRST):**
+- Find files: `fd -e py -E venv`
+- Find in directory: `fd . src/ -e ts`
+- Glob pattern: `fd -g '*.test.ts'`
+- Count scope: `fd -e js | wc -l`
 **Directory listing:** `eza --tree --level 3 --git-ignore`
 **Code metrics:** `tokei src/` | JSON: `tokei --output json | jq '.Total.code'`
 **Verification:** `difft --display inline original modified` | JSON: `DFT_UNSTABLE=yes difft --display json A B`
