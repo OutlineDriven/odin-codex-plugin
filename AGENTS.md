@@ -123,8 +123,13 @@ In colocated mode, jj and Git share the same backend. Every jj change IS a Git c
 6. **Refine:**
    - `jj squash`: To fold working copy changes into the parent commit.
    - `jj split`: To break a change into multiple changes.
-7. **Push:** `jj git push --bookmark <branch-name>` to push the specific bookmark (branch) to remote.
-   - Alternative: `jj git push --change @` pushes current change, auto-creating remote bookmark.
+7. **Publish (Target Branch Workflow):**
+   - Ask user for target branch (e.g., `main`, `develop`).
+   - `jj git fetch` (Refresh remote state).
+   - `jj rebase -d <target>@origin` (Merge to target).
+   - `jj bookmark create <name> -r @` (Expose atom to Git).
+   - `jj bookmark track <name>@origin` (If remote bookmark exists).
+   - `jj git push --bookmark <name>` (Transport to Remote).
 
 **Bookmark Management:**
 - `jj bookmark list` - List all bookmarks (local and remote)
