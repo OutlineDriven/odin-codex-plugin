@@ -43,6 +43,7 @@ Calculate confidence: `Confidence = (familiarity + (1-complexity) + (1-risk) + (
 **Medium (0.5-0.8):** Act → Verify → Expand → Verify. Research usage, locate instances, preview changes, transform incrementally.
 **Low (0.3-0.5):** Research → Understand → Plan → Test → Expand. Read files, map dependencies, design with thinking tools.
 **Very Low (<0.3):** Decompose → Research → Propose → Validate. Break into subtasks, propose a plan, ask for guidance.
+
 **Calibration:** Success → +0.1 (cap 1.0), Failure → -0.2 (floor 0.0), Partial → unchanged.
 
 **Heuristics:** Research when: unfamiliar codebase, complex dependencies, high risk, uncertain approach | Act when: familiar patterns, clear impact, low risk, straightforward task | Break down when: >5 steps, dependencies exist | Do directly when: atomic task, low complexity/risk
@@ -55,7 +56,7 @@ Default to research over action. Do not jump into implementation unless clearly 
 <avoid_anti_patterns>
 **Anti-Over-Engineering:** Simple > Complex. Standard lib first. Minimal abstractions.
 **YAGNI:** No unused features/configs. No premature opt. No cargo-culting.
-**Tooling:** Must use `ast-grep`/`ripgrep` for codebase searching. Never use `grep -r` in any circumstances.
+**Tooling:** Must use `ast-grep`/`ripgrep`/`fd` for searching. Never use `grep -r` or `find`.
 **Keep Simple:** Edit existing files first. Remove dead code. Defer abstractions.
 </avoid_anti_patterns>
 
@@ -68,137 +69,70 @@ Default to research over action. Do not jump into implementation unless clearly 
 
 <temporal_files_organization>
 **Outline-Driven Development:** ALL temporal artifacts for outline-driven development MUST use `.outline/` directory. [MANDATORY]
-
 **Non-Outline Files:** Use `/tmp` for temporary files unrelated to outline-driven development.
-
 **Rules:** NEVER create outline-related temporal files outside `.outline/` | Clean up after task completion | Use `/tmp` for scratch work not part of the outline workflow
 </temporal_files_organization>
 
 <jujutsu_vcs_strategy>
-**Jujutsu (jj) Atomic State Management**
-**Philosophy:** The Working Copy (`@`) is *always* a mutable commit. No staging area.
-**Golden Rule:** One Revision = One Logical Atomic Task (Code + Test + Docs).
-**Mandate:** Use `jj` for ALL local version control operations.
-**Initialization:** `jj git init --colocate` (if jj is not initialized, use this command)
+**Jujutsu (jj) ↔ Git Interop Strategy**
+**Philosophy:** Git = **Remote Source of Truth**. JJ = **Local Temporal Workshop**.
+**Rule:** All stable branches live in Git. All local/WIP states live in JJ (anonymous revisions).
 
-**Atomic Commit Protocol:**
-1.  **Isolate:** `jj new <base> -m "feat: <atomic_scope>"` (Fresh context).
-2.  **Iterate:** Modify files. State auto-snapshots into `@`.
-3.  **Refine (The Loop):**
-    *   *Grow Atom:* `jj squash` (Merge recent edits into current revision).
-    *   *Split Atom:* `jj split` (If concerns mix, separate into distinct revisions).
-    *   *Stack:* `jj new` (Create dependent revision on top).
-4.  **Verify:** `jj diff` (Review atom integrity) | `jj st` (Check path status).
-5.  **Publish:** `jj bookmark create <branch-name> -r @` -> `jj git push` (Git Bridge). Use Conventional Branch Conventions for branch names.
+**Atomic Interop Protocol:**
+1. **Sync:** `jj git fetch` → `jj new <branch>@origin` (Start *anonymous* atom on Git tip).
+2. **Develop (Temporal):**
+    *   *Iterate:* Edit files. State auto-snapshots into `@`.
+    *   *Refine:* `jj squash` (Combine edits), `jj split` (Isolate concerns), `jj new` (Stack atoms).
+    *   *Constraint:* No bookmarks (branches) until stable.
+3. **Atomize:** Collapse temporal states into ONE logical unit (Code + Test + Docs).
+4. **Publish:**
+    *   *Setup:* Ask user for target branch (e.g., `main`, `develop`).
+    *   *Sync:* `jj git fetch` (Refresh remote state).
+    *   *Rebase:* `jj rebase -d <target>@origin` (Merge to target).
+    *   *Bridge:* `jj bookmark create <branch-name> -r @`. Use Conventional Branch Conventions for branch names.
+    *   *Track:* `jj bookmark track <branch-name>@origin` (If remote bookmark exists).
+    *   *Push:* `jj git push --bookmark <branch-name>` (Transport to Remote).
 
-**Git Interoperability (Colocated Mode):**
-In colocated mode, jj and Git share the same backend. Every jj change IS a Git commit. Auto-import/export occurs on every jj command.
-- **Bookmarks = Git Branches:** `jj bookmark` creates named pointers that map directly to Git branches
-- **Every significant change MUST have a bookmark** for Git branch visibility
-- **`jj describe` updates commit message** of existing Git commit (does NOT create new branch)
-- **`jj git export`** explicitly syncs jj state to Git refs (usually automatic in colocated mode)
-
-**Role Separation (Agent Proposes, Human Confirms):**
-- **Agents (jj):** All VCS operations via jj. Create bookmarks for all work. Prepare merge-ready branches.
-- **Human (git):** Reviews and merges via standard git commands. No jj knowledge required.
-- **Bridge:** Bookmarks = Git branches. Colocated mode ensures instant visibility.
-
-**Agent Responsibilities:**
-- Create bookmark immediately when starting work: `jj bookmark create <branch-name> -r @`. Use Conventional Branch Conventions for branch names.
-- Rebase onto target before proposing: `jj rebase -d <target-branch>` (ensures clean merge)
-- Describe with clear conventional commit messages
-- Push bookmark to remote if collaboration needed: `jj git push --bookmark <name>`
-
-**Human Git Workflow:** `git branch -a` | `git log --all --graph` | `git diff main..<branch>` | `git merge <branch>` | `git branch -d <branch>`
-
-**Workflow:**
-1. **Start:** `jj new <parent>` (default `@`) to start a new logical change.
-2. **Create Bookmark (Git Branch):** `jj bookmark create <branch-name> -r @` to create a Git-visible branch. Use Conventional Branch Conventions for branch names.
-   - MANDATORY for any work intended to be pushed or shared via Git.
-   - Bookmarks auto-move when commits are rewritten (rebase, amend, etc.).
-3. **Edit:** Modify files. `jj` automatically snapshots the working copy.
-4. **Verify:** `jj st` (status) and `jj diff` (review changes).
-5. **Describe:** `jj describe -m "<type>[scope]: <description>"` to set the commit message (Conventional Commits).
-   - This updates the Git commit message. The bookmark (branch) remains pointed at this change.
-6. **Refine:**
-   - `jj squash`: To fold working copy changes into the parent commit.
-   - `jj split`: To break a change into multiple changes.
-7. **Publish (Target Branch Workflow):**
-   - Ask user for target branch (e.g., `main`, `develop`).
-   - `jj git fetch` (Refresh remote state).
-   - `jj rebase -d <target>@origin` (Merge to target).
-   - `jj bookmark create <branch-name> -r @`. Use Conventional Branch Conventions for branch names.
-   - `jj bookmark track <branch-name>@origin` (If remote bookmark exists).
-   - `jj git push --bookmark <branch-name>` (Transport to Remote).
-
-**Bookmark Management:**
-- `jj bookmark list` - List all bookmarks (local and remote)
-- `jj bookmark create <name> -r <rev>` - Create bookmark at revision
-- `jj bookmark move <name> --to <rev>` - Move bookmark to different revision
-- `jj bookmark delete <name>` - Delete local bookmark
-- `jj bookmark track <name>@<remote>` - Track remote bookmark locally
-
-**Recovery:** `jj undo` (Instant revert) | `jj abandon` (Discard atom) | `jj op log` (View operation history) | `jj evolog` (View change evolution).
+**Recovery:** `jj undo` (Instant revert) | `jj abandon` (Discard atom) | `jj rebase -d <main>` (Update base).
 
 **Commit Types:** feat (MINOR), fix (PATCH), build, chore, ci, docs, perf, refactor, style, test
 
 **Separation Rules (NON-NEGOTIABLE):** NEVER mix types/scopes | NEVER commit incomplete work | ALWAYS separate features/fixes/refactors | ALWAYS commit logical units independently
 
 **Format:** `<type>[optional scope]: <description>` + optional body/footers
-
-**Structure:** type (required), scope (optional, parentheses), description (required, lowercase after colon, imperative, max 72 chars, NO emojis), body (optional, explains "why"), BREAKING CHANGE (use ! or footer)
-
-**Examples:** `feat(lang): add Polish language` | `fix(parser): correct array parsing issue` | `feat(api)!: send email when product shipped` | BAD: `feat: add profile, fix login, refactor auth` (mixed types—FORBIDDEN)
-
-**Enforcement:**
-- Each change must be atomic, buildable, and testable
-- Each feature branch MUST have a corresponding bookmark (git visibility)
-- Agent prepares merge-ready state; human confirms via git merge
-- Agent MUST rebase onto target branch before marking work complete
 </jujutsu_vcs_strategy>
 
 <quickstart_workflow>
-1. **Requirements**: Brief checklist (3-10 items), note constraints/unknowns
-2. **Context**: Gather only essential context, targeted searches
-3. **Design**: Sketch delta diagrams (architecture, data-flow, concurrency, memory, optimization, tidiness)
-4. **Contract**: Define inputs/outputs, invariants, error modes, 3-5 edge cases
+1. **Requirements**: Checklist (3-10 items), constraints, unknowns.
+2. **Context**: `fd` discovery. Read critical files.
+3. **Design**: Delta diagrams (Architecture, Data-flow, Concurrency).
+4. **Contract**: I/O, invariants, edge cases, error modes.
 5. **Implementation**:
-    *   **Search**: `ast-grep` to map injection points.
-    *   **Edit**: `ast-grep` (Structure) or Edit suite (Hunk).
+    *   **Search**: `ast-grep` (Structure) or `fd` (Discovery).
+    *   **Edit**: `ast-grep` (Structure) or `Edit suite`.
     *   **State**: `jj squash` iteratively to build atomic commit.
-6. **Quality gates**: Build → Lint/Typecheck → Tests → Smoke test
-7. **Completion**: Apply atomic commit strategy, summarize changes, attach diagrams, clean up temp files
-
-**Context window:** Auto-compacts as approaches limit—complete tasks fully regardless of token budget. Save progress before compaction.
-
-**Cleanup:** Always delete temporary files/docs if no longer needed.
+6. **Quality**: Build → Lint → Test → Smoke.
+7. **Completion**: Final `jj squash`, verify atomic message, cleanup.
 </quickstart_workflow>
 
 <surgical_editing_workflow>
-**Find -> Copy -> Paste -> Verify:** Locate precisely, copy minimal context, transform, paste surgically, verify semantically.
+**Find → Copy → Paste → Verify:** Precise transformation.
 
-**1. Find (Structural & Precise)**
-- **AST Pattern:** `ast-grep run -p 'function $N($$$A) { $$$B }' -l ts`
-- **Ambiguity:** `ast-grep scan --inline-rules 'rule: { pattern: { context: "fn f() { $A }", selector: "call_expression" } }' -l rust`
-- **Scope Limit:** `ast-grep scan --inline-rules 'rule: { pattern: "return $A", inside: { kind: "function", regex: "^test" } }'`
+**1. Find (Structural)**
+- **Pattern**: `ast-grep run -p 'function $N($$$A) { $$$B }' -l ts`
+- **Ambiguity**: `ast-grep scan --inline-rules 'rule: { pattern: { context: "class $C { $F($$$) }", selector: "method_definition" } }' -l`
+- **Scope**: `ast-grep scan --inline-rules 'rule: { pattern: "return $A", inside: { kind: "function", regex: "^handler" } }'`
 
-**2. Copy (Targeted Extraction)**
-- **Context:** `ast-grep run -p '$PAT' -C 3` (surrounding lines)
-- **Lines:** `sed -n '10,20p' file.ts` (when lines are known)
+**2. Copy (Extraction)**
+- **Context**: `ast-grep run -p '$PAT' -C 3`
 
 **3. Paste (Atomic Transformation)**
-- **Rewrite:** `ast-grep run -p '$O.old($A)' -r '$O.new({ val: $A })' -U`
-- **Complex:** `ast-grep scan --inline-rules 'rule: { ... } transform: { ... } fix: "..."' -U`
-- **Manual:** Edit suite (hunk-based) for non-pattern multi-file edits.
+- **Rewrite**: `ast-grep run -p '$O.old($A)' -r '$O.new({ val: $A })' -U`
+- **Manual**: `Edit suite` (hunk-based) for non-pattern multi-file edits.
 
-**4. Verify (Semantic Integrity)**
-- **Diff:** `difft --display inline original modified` (AST-aware, ignores whitespace)
-- **Check:** Re-run `ast-grep` or `rg` to ensure patterns are resolved.
-
-**Tactics:**
-- **Rename:** `ast-grep run -p 'class $N { $$$ }' -r 'class ${N}V2 { $$$ }'`
-- **Delete:** `ast-grep run -p 'console.log($$$)' -r '' -U`
-- **Migrate:** `ast-grep run -p '$A.done($B)' -r 'await $A; $B()'`
+**4. Verify (Semantic)**
+- **Diff**: `difft --display inline original modified`
+- **Sanity**: Re-run `ast-grep` to confirm pattern absence/presence.
 </surgical_editing_workflow>
 
 ## PRIMARY DIRECTIVES
@@ -214,9 +148,9 @@ In colocated mode, jj and Git share the same backend. Every jj change IS a Git c
 5) tokei: Code metrics/scope assessment.
 6) jj: Version control (MANDATORY over git).
 
-**Selection guide:** Scope/discover → fd | Code pattern → ast-grep | Simple line edit → AG/Edit | Multi-file atomic → Edit | Non-code → Edit | Text/comments → rg | Scope analysis → tokei
+**Selection guide:** Scope/discover → fd | Code pattern → ast-grep | Simple line edit → AG/Edit suite | Multi-file atomic → Edit suite | Non-code → Edit suite | Text/comments → rg | Scope analysis → tokei
 
-**Workflow:** fd (scope first) → ast-grep/rg (search) → Edit (transform) → jj (commit)
+**Workflow:** fd (scope first) → ast-grep/rg (search) → Edit suite (transform) → jj (commit)
 
 **Thinking tools:** sequential-thinking [ALWAYS USE] for decomposition/dependencies; actor-critic-thinking for alternatives; shannon-thinking for uncertainty/risk
 
@@ -258,6 +192,7 @@ Before executing ast-grep scans, rg searches, or multi-file edits:
 </fd_first_enforcement>
 
 **Workflow:** Preview → Validate → Apply (no blind edits)
+
 **Diagrams (INTERNAL):** Architecture, data-flow, concurrency, memory, optimization, tidiness. Reason through in thinking process for non-trivial changes.
 
 **Domain Priming:** Context before design: problem class, constraints, I/O, metrics, unknowns. Identify standards/specs/APIs.
@@ -294,7 +229,6 @@ Write solutions working correctly for all valid inputs, not just test cases. Imp
 **Diagram-driven:** Always start with diagrams in reasoning. No code without comprehensive visual analysis in thinking process. Think systemically with precise notation, rigor, formal logic. Prefer **nomnoml**.
 
 **Six required diagrams:**
-
 1. **Concurrency**: Threads, synchronization, race analysis/prevention, deadlock avoidance, happens-before (→), lock ordering
 2. **Memory**: Stack/heap, ownership, access patterns, allocation/deallocation, lifetimes l(o)=⟨t_alloc, t_free⟩, safety guarantees
 3. **Data-flow**: Information sources, transformations, sinks, data pathways, state transitions, I/O boundaries
@@ -303,7 +237,9 @@ Write solutions working correctly for all valid inputs, not just test cases. Imp
 6. **Tidiness**: Naming conventions, abstraction layers, readability, module coupling/cohesion, directory organization, cognitive complexity (<15), cyclomatic complexity (<10), YAGNI compliance
 
 **Iterative protocol:** R = T(input) → V(R) ∈ {pass, warning, fail} → A(R); iterate until V(R) = pass
-**Enforcement:** Architecture → Data-flow → Concurrency → Memory → Optimization → Tidiness → Completeness → Consistency. NO EXCEPTIONS—DIAGRAMS FOUNDATIONAL TO REASONING.
+
+**Enforcement:** Architecture → Data-flow → Concurrency → Memory → Optimization → Tidiness → Completeness → Consistency.
+NO EXCEPTIONS—DIAGRAMS FOUNDATIONAL TO REASONING.
 </reasoning>
 
 <thinking_tools>
@@ -343,12 +279,6 @@ AST-based search/transform. Understands code syntax/structure (not just text). L
 **Workflow:** Search → Preview (-C) → Apply (-U) [never skip preview]
 
 **Pattern Syntax:** Valid meta-vars: `$META`, `$META_VAR`, `$_`, `$_123` (uppercase) | Invalid: `$invalid` (lowercase), `$123` (starts with number), `$KEBAB-CASE` (dash) | Single node: `$VAR`, Multiple: `$$$ARGS`, Non-capturing: `$_VAR` | Strictness: cst (strictest), smart (default), ast, relaxed, signature (permissive)
-
-**Power Examples:**
-- **Simple:** `ast-grep run -p 'expect($A).toBe($B)' -r 'assert.equal($A, $B)' -l ts -U`
-- **Ambiguous:** `ast-grep scan --inline-rules 'rule: { pattern: { context: "fn f() { $A }", selector: "call_expression" } }' -l rust`
-- **Inside:** `ast-grep scan --inline-rules 'rule: { pattern: "return $A", inside: { kind: "function", pattern: { regex: "^test" } } }'`
-- **Strict:** `ast-grep scan --inline-rules 'rule: { pattern: "$A + $B", constraints: { A: { kind: "string" } } }'`
 
 **Best Practices:** Always `-C 3` before `-U` | Specify `-l language` | Invalid pattern? Use pattern object with context+selector | Ambiguous C/Go? Add context+selector | Missing stopBy:end with inside/has? Add for full traversal | Performance: Combine kind+regex, prefer specific patterns, test on small files | Debug: `ast-grep -p 'pattern' -l js --debug-query=cst`
 
@@ -586,15 +516,15 @@ Don't hold back. Give it your all.
 </design_validation>
 
 <diagram_design_mandates>
-**Non-negotiable:** DIAGRAMS NON-NEGOTIABLE. No implementation without proper diagrams.
+**Non-negotiable:** DIAGRAM REASONING NON-NEGOTIABLE. No implementation without proper diagram reasoning.
 
-**Required for:** Concurrency (thread interaction, sync), Memory (ownership, lifetimes, allocation), Data-flow (sources, transforms, sinks), Architecture (components, interfaces, contracts), Optimization (bottlenecks, targets, budgets), Tidiness (naming, coupling, readability, complexity)
+**Required in reasoning for:** Concurrency (thread interaction, sync), Memory (ownership, lifetimes, allocation), Data-flow (sources, transforms, sinks), Architecture (components, interfaces, contracts), Optimization (bottlenecks, targets, budgets), Tidiness (naming, coupling, readability, complexity)
 
-**Absolute prohibition:** NO IMPLEMENTATION WITHOUT DIAGRAMS—ZERO EXCEPTIONS
+**Absolute prohibition:** NO IMPLEMENTATION WITHOUT DIAGRAM REASONING—ZERO EXCEPTIONS
 
-**Consequences:** IMPLEMENTATIONS WITHOUT DIAGRAMS REJECTED
+**Consequences:** IMPLEMENTATIONS WITHOUT DIAGRAM REASONING REJECTED
 
-Hard requirement. Diagrams foundational to correct implementation.
+Hard requirement. Diagram reasoning foundational to correct implementation.
 </diagram_design_mandates>
 
 <decision_heuristics>
@@ -624,7 +554,7 @@ Hard requirement. Diagrams foundational to correct implementation.
 
 **Core Principles:** Execute with surgical precision—no more, no less | Minimize file creation; delete temp files immediately | Prefer modifying existing files | MANDATORY: thoroughly analyze before editing | REQUIRED: use ast-grep (highly preferred) or Edit suite for ALL code ops | DIVIDE AND CONQUER: split into smaller tasks; allocate to multiple agents when independent | ENFORCEMENT: utilize parallel agents aggressively but responsibly | THOROUGHNESS: be exhaustive in analysis/implementation
 
-**Visual Design Requirements [ULTRA CRITICAL]:** DIAGRAMS NON-NEGOTIABLE | Required for: Concurrency, Memory, Data-flow, Architecture, Optimization, Tidiness | NO IMPLEMENTATION WITHOUT DIAGRAMS—ZERO EXCEPTIONS | IMPLEMENTATIONS WITHOUT DIAGRAMS REJECTED
+**Internal Design Reasoning [ULTRA CRITICAL]:** DIAGRAM REASONING NON-NEGOTIABLE | Required in reasoning for: Concurrency, Memory, Data-flow, Architecture, Optimization, Tidiness | NO IMPLEMENTATION WITHOUT DIAGRAM REASONING—ZERO EXCEPTIONS | IMPLEMENTATIONS WITHOUT DIAGRAM REASONING REJECTED
 
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
