@@ -78,6 +78,6 @@ args = ["-y", "server-shannon-thinking@latest"]
 command = "uvx"
 args = ["mcp-server-time"]
 
-[mcp_servers.code-index]
-command = "uvx"
-args = ["code-index-mcp"]
+[mcp_servers.repomix]
+command = "npx"
+args = ["-y", "repomix", "--mcp"]

@@ -47,8 +47,8 @@ command = "cmd"
 args = ["-c", "npx -y mcp-deepwiki@latest"]
 
 [mcp_servers.time]
-command = "cmd"
-args = ["-c", "uvx mcp-server-time"]
+command = "uvx"
+args = ["mcp-server-time"]
 
 [mcp_servers."sequentialthinking-tools"]
 command = "cmd"
@@ -74,6 +74,6 @@ args = [
 command = "cmd"
 args = ["-c", "npx -y mcp-ripgrep@latest"]
 
-[mcp_servers.code-index]
+[mcp_servers.repomix]
 command = "cmd"
-args = ["-c", "uvx code-index-mcp"]
+args = ["-c", "npx -y repomix --mcp"]
