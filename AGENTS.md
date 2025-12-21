@@ -67,6 +67,13 @@ Default to research over action. Do not jump into implementation unless clearly 
 - Choose straightforward flows; defer abstractions until the repeated need is proven.
 </keep_it_simple>
 
+<calculation_always_explicit>
+**NO MENTAL MATH:** LLMs cannot calculate. You must use tools for ANY arithmetic, conversion, or logic.
+- **Date/Logic/Units:** `fend "date + 3 weeks"`, `fend "true and false or true"`, `fend "100mb / 2s"`.
+- **List/Stats:** `nu -c '[1 2 3] | math avg'` (Nushell is MANDATORY for list math).
+**Enforcement:** Verify all constants/timeouts/buffer sizes with tools. Never hallucinate values.
+</calculation_always_explicit>
+
 <temporal_files_organization>
 **Outline-Driven Development:** ALL temporal artifacts for outline-driven development MUST use `.outline/` directory. [MANDATORY]
 **Non-Outline Files:** Use `/tmp` for temporary files unrelated to outline-driven development.
