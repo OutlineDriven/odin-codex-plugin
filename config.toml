@@ -22,7 +22,6 @@ streamable_shell = true     # enable the streamable exec tool
 web_search_request = true   # allow the model to request web searches
 # view_image_tool defaults to true; omit to keep defaults
 skills = true
-tui2 = true
 
 [sandbox_workspace_write]
 network_access = true
@@ -49,10 +48,6 @@ args = ["-y", "mcp-server-actor-critic-thinking"]
 [mcp_servers.context7]
 command = "npx"
 args = ["-y", "@upstash/context7-mcp@latest"]
-
-[mcp_servers.docfork]
-command = "npx"
-args = ["-y", "docfork"]
 
 [mcp_servers.ast-grep]
 command = "uvx"
