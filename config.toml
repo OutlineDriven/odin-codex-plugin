@@ -5,8 +5,7 @@ approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 project_doc_max_bytes = 65536
 project_doc_fallback_filenames = ["CLAUDE.md", "README.md"]
-# network_access = true
-
+#
 # By default, only the cwd for the Codex session will be writable (and $TMPDIR on macOS),
 # but you can specify additional writable folders in this array.
 writable_roots = ["/tmp"]
@@ -18,8 +17,8 @@ writable_roots = ["/tmp"]
 
 [features]
 apply_patch_freeform = true
-streamable_shell = true     # enable the streamable exec tool
-web_search_request = true   # allow the model to request web searches
+streamable_shell = true  # enable the streamable exec tool
+web_search_request = true  # allow the model to request web searches
 # view_image_tool defaults to true; omit to keep defaults
 skills = true
 
@@ -52,9 +51,9 @@ args = ["-y", "@upstash/context7-mcp@latest"]
 [mcp_servers.ast-grep]
 command = "uvx"
 args = [
-    "--from",
-    "git+https://github.com/ast-grep/ast-grep-mcp",
-    "ast-grep-server",
+  "--from",
+  "git+https://github.com/ast-grep/ast-grep-mcp",
+  "ast-grep-server",
 ]
 
 [mcp_servers.ripgrep]
