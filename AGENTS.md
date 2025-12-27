@@ -172,14 +172,14 @@ Default to research over action. Do not jump into implementation unless clearly 
 
 **Tool Selection [Second-Class Tools - SUPPORT]:**
 1) **Utilities:** `zoxide` (Nav), `eza` (List), `bat` (Read), `huniq` (Dedupe).
-2) **Analysis:** `tokei` (Stats), `ripgrep` (Text Search), `fselect` (SQL Query).
+2) **Analysis:** `tokei` (Stats), `ripgrep` (Text Search), `fselect` (SQL Query), `global` (Symbol Nav).
 3) **Ops:** `hck` (Column Cut), `rargs` (Regex Args), `nomino` (Rename).
 4) **VCS:** `git-branchless` (Main), `mergiraf` (Merge), `difftastic` (Diff).
 5) **Data:** `jql` (JSON - Primary), `jaq` (jq-compatible).
 
-**Selection guide:** Discovery → fd | Code pattern → ast-grep | Simple edit → srgn | Multi-file atomic → Edit suite | Text → rg | Scope → tokei | VCS → git-branchless | JSON → jql (default), jaq (jq-compatible/complex)
+**Selection guide:** Discovery → fd | Code pattern → ast-grep | Simple edit → srgn | Multi-file atomic → Edit suite | Text → rg | Symbol nav → global/ctags | Scope → tokei | VCS → git-branchless | JSON → jql (default), jaq (jq-compatible/complex)
 
-**Workflow:** fd (discover) → ast-grep/rg (search) → Edit suite (transform) → git (commit) → git-branchless (manage)
+**Workflow:** fd (discover) → gtags/ctags (index) → global (navigate) → ast-grep/rg (search) → Edit suite (transform) → git (commit) → git-branchless (manage)
 
 **Thinking tools:** sequential-thinking [ALWAYS USE] for decomposition/dependencies; actor-critic-thinking for alternatives; shannon-thinking for uncertainty/risk
 
@@ -381,7 +381,18 @@ Surgical regex/grammar replacement. Understands source code syntax for precise m
 * **`huniq`**: Hash-based dedupe. `huniq < file.txt` | `huniq -c < file.txt` (count). Handles massive files via hash tables
 * **`fend`**: Unit-aware calc. Math: `fend '2^64'` | Units: `fend '5km to miles'` | Time: `fend 'today + 3 weeks'` | Base: `fend '0xff to decimal'` | Bool: `fend 'true and false'`
 
-### 9) repomix (MCP) [CONTEXT PACKING]
+### 9) Code Indexing
+* **`gtags` (GNU Global)**: Cross-reference database. Creates GTAGS (defs), GRTAGS (refs), GPATH (paths).
+    * **Index:** `gtags` (full) | `gtags -i` (incremental) | `gtags -c` (compact)
+    * **Query:** `global <sym>` (defs) | `global -r <sym>` (refs) | `global -x <sym>` (xref format)
+    * **Navigate:** `global -f <file>` (tags in file) | `global -P <pattern>` (path) | `global -g <pattern>` (grep)
+    * **Update:** `global -u` (incremental, from anywhere in project)
+* **`ctags` (Universal Ctags)**: Tag file generator. 200+ languages, IDE-compatible.
+    * **Index:** `ctags -R .` (recursive) | `ctags -R --exclude=node_modules --exclude=.git .`
+    * **Output:** `ctags --output-format=json -R .` | `ctags -x -R .` (xref) | `ctags -e -R .` (etags)
+    * **Scope:** `ctags --languages=TypeScript,JavaScript -R src/` | `ctags --kinds-<LANG>=+<kinds> -R .`
+
+### 10) repomix (MCP) [CONTEXT PACKING]
 AI-optimized codebase analysis via MCP. Pack repositories into consolidated files for analysis.
 
 **Use for:** Code reviews, documentation generation, codebase understanding, remote repo analysis.
