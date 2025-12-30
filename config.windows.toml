@@ -61,14 +61,6 @@ args = ["-c", "npx -y mcp-server-actor-critic-thinking"]
 command = "cmd"
 args = ["-c", "npx -y server-shannon-thinking@latest"]
 
-[mcp_servers.ast-grep]
-command = "uvx"
-args = [
-  "--from",
-  "git+https://github.com/ast-grep/ast-grep-mcp",
-  "ast-grep-server",
-]
-
 [mcp_servers.ripgrep]
 command = "cmd"
 args = ["-c", "npx -y mcp-ripgrep@latest"]

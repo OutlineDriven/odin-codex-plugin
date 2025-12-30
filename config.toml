@@ -48,14 +48,6 @@ args = ["-y", "mcp-server-actor-critic-thinking"]
 command = "npx"
 args = ["-y", "@upstash/context7-mcp@latest"]
 
-[mcp_servers.ast-grep]
-command = "uvx"
-args = [
-  "--from",
-  "git+https://github.com/ast-grep/ast-grep-mcp",
-  "ast-grep-server",
-]
-
 [mcp_servers.ripgrep]
 command = "npx"
 args = ["-y", "mcp-ripgrep@latest"]
