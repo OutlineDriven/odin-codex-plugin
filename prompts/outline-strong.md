@@ -404,4 +404,3 @@ echo "=== ALL 5 LAYERS VERIFIED ==="
 
 
 
-$ARGUMENTS

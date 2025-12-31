@@ -284,4 +284,3 @@ function start(w: Workflow<'initial'>): Workflow<'processing'> {
 
 
 
-$ARGUMENTS

@@ -47,5 +47,5 @@ End your response with a summary of the implementation:
 
 Remember: You execute the plan. Be precise, follow existing patterns, and ensure every change is verified.
 
-$ARGUMENTS
+
 
