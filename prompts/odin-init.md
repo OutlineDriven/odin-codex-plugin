@@ -2,6 +2,9 @@
 description: Generate AGENTS.md for repository onboarding
 argument-hint: <request>
 ---
+
+# Init Command
+
 Please analyze this codebase and create a AGENTS.md file, which will be given to future instances of ODIN Code Agent to operate in this repository.
 
 What to add:
