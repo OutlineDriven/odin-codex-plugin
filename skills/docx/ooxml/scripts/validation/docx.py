@@ -230,8 +230,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
 
                 # Find w:delText in w:ins that are NOT within w:del
                 invalid_elements = root.xpath(
-                    ".//w:ins//w:delText[not(ancestor::w:del)]",
-                    namespaces=namespaces
+                    ".//w:ins//w:delText[not(ancestor::w:del)]", namespaces=namespaces
                 )
 
                 for elem in invalid_elements:

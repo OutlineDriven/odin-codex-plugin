@@ -63,7 +63,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Create a plan file under $CODEX_HOME/plans or ~/.codex/plans."
     )
-    parser.add_argument("--name", required=True, help="Plan name (lower-case, hyphen-delimited).")
+    parser.add_argument(
+        "--name", required=True, help="Plan name (lower-case, hyphen-delimited)."
+    )
     parser.add_argument("--description", required=True, help="Short plan description.")
     parser.add_argument(
         "--body-file",
@@ -89,7 +91,9 @@ def main() -> int:
 
     body = read_body(args)
     if body is None:
-        raise SystemExit("Provide --body-file, stdin, or --template to supply plan content.")
+        raise SystemExit(
+            "Provide --body-file, stdin, or --template to supply plan content."
+        )
 
     body = body.strip()
     if not body:
@@ -102,7 +106,9 @@ def main() -> int:
     plan_path = plans_dir / f"{name}.md"
 
     if plan_path.exists() and not args.overwrite:
-        raise SystemExit(f"Plan already exists: {plan_path}. Use --overwrite to replace.")
+        raise SystemExit(
+            f"Plan already exists: {plan_path}. Use --overwrite to replace."
+        )
 
     content = f"---\nname: {name}\ndescription: {description}\n---\n\n{body}\n"
     plan_path.write_text(content, encoding="utf-8")

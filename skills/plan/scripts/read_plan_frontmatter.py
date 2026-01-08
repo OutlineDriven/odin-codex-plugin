@@ -11,7 +11,9 @@ from plan_utils import parse_frontmatter
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Read name/description from plan frontmatter.")
+    parser = argparse.ArgumentParser(
+        description="Read name/description from plan frontmatter."
+    )
     parser.add_argument("plan_path", help="Path to the plan markdown file.")
     parser.add_argument("--json", action="store_true", help="Emit JSON output.")
     args = parser.parse_args()

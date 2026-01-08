@@ -46,7 +46,12 @@ def parse_frontmatter(path: Path) -> dict:
             key, value = line.split(":", 1)
             key = key.strip()
             value = value.strip()
-            if value and len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+            if (
+                value
+                and len(value) >= 2
+                and value[0] == value[-1]
+                and value[0] in ('"', "'")
+            ):
                 value = value[1:-1]
             data[key] = value
 
