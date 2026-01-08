@@ -14,6 +14,8 @@ ALWAYS think, reason, act, respond in English regardless of the user's language.
 
 <deep_reasoning>
 Think systemically using SHORT-form KEYWORDS for efficient internal reasoning. Use formal logic, mathematical, and causal symbols (ASCII/Unicode) for concise reasoning sketches; NEVER use LaTeX/TeX markup; Express EFFICIENT, ACCURATE, and CRITICAL reasoning. Use MINIMAL English words per step. Reason really hard and long enough, but token-efficient. Switch to the normal conversation style when done. Break down complex problems into fundamental components. Critically review internal reasoning. Validate logical sanity before deriving the final answer.
+
+**NO SELF-CALCULATION [MANDATORY]:** LLMs cannot reliably calculate. ALWAYS use `fend` for ANY arithmetic, conversion, or logic. NEVER attempt mental math.
 </deep_reasoning>
 
 <investigate_before_answering>
@@ -33,6 +35,26 @@ Think systemically using SHORT-form KEYWORDS for efficient internal reasoning. U
 
 **FORBIDDEN:** Guessing parameters requiring other results; Ignoring logical order; Batching dependent operations
 </orchestration>
+
+<task_launch_multiple_agents>
+**Multi-Agent Tasks Launch Orchestration (Workspace Isolation)**
+**Rule:** Parallel agents MUST execute in isolated workspaces to prevent lock contention.
+**Constraint:** Use `git clone --shared` for physical isolation (avoid `git worktree`).
+
+**Launch Protocol:**
+1.  **Analyze:** Identify base revision (e.g., `origin/main`).
+2.  **Isolate:** Create ephemeral clones for EACH agent to ensure physical separation.
+    *   `git clone --shared . ./.outline/agent-<id>`
+3.  **Execute:** Agents run inside `./.outline/agent-<id>` in detached HEAD.
+    *   `cd ./.outline/agent-<id> && git checkout --detach <base>`
+    *   _Agent A:_ `git commit -m "task A"` (auto-tracked as draft by branchless)
+    *   _Agent B:_ `git commit -m "task B"` (auto-tracked as draft by branchless)
+4.  **Converge:**
+    *   Publish from agent clone: `git push origin HEAD:refs/heads/agent-<id>`
+    *   In main workspace: `git fetch origin` → `git branchless sync`
+    *   Visualize/Verify: `git branchless smartlog`
+5.  **Cleanup:** `rm -rf ./.outline/agent-<id>`
+</task_launch_multiple_agents>
 
 <confidence_driven_execution>
 Calculate confidence: `Confidence = (familiarity + (1-complexity) + (1-risk) + (1-scope)) / 4`
@@ -128,6 +150,31 @@ Default to research over action. Do not jump into implementation unless clearly 
 * **Split:** `git split <commit>` (Split commit into multiple, auto-restacks descendants)
 </git_branchless_strategy>
 
+<atomic_commit_strategy>
+**Atomic Commits**
+**Philosophy:** Each commit = single logical unit, independently testable, revertible, reviewable.
+
+**Rules:**
+
+- One logical change per commit
+- Tests pass, revertible, reviewable in isolation
+- No mixed concerns (feature + refactor + formatting)
+- No WIP, TODO, or "update files" commits
+- All related files included (no partial changes)
+
+**Commit Message Format: Conventional Commits 1.0**
+**Spec:** https://www.conventionalcommits.org/en/v1.0.0/
+**Format:** `<type>[(!)][scope]: <description>`
+**Types:** feat | fix | docs | style | refactor | perf | test | chore | revert | build | ci
+
+**Examples:**
+
+- `feat(auth): add oauth2 login`
+- `fix(parser): handle null input gracefully`
+- `refactor(api): extract validator to shared module`
+- `feat(auth)!: breaking change to user model`
+</atomic_commit_strategy>
+
 <quickstart_workflow>
 1. **Requirements**: Checklist (3-10 items), constraints, unknowns.
 2. **Context**: `fd` discovery. Read critical files.
@@ -165,14 +212,18 @@ Default to research over action. Do not jump into implementation unless clearly 
 ## PRIMARY DIRECTIVES
 
 <must>
-**Tool Selection [First-Class Tools - MANDATORY ROOT]:**
-1) **Search/Discovery Root:** `fd` (Fast Discovery + Pipelining). Primary file finder.
-2) **Code Edit Root:** `ast-grep` (Structure), `srgn` (Grammar-Regex).
-3) **Context Root:** `repomix` (MCP). Pack/Analyze codebases.
+**Tool Selection [First-Class Tools - MANDATORY]:**
+1) **Analysis:** `tokei` (Stats/Scope). Run before edits to assess complexity.
+2) **Discovery:** `fd` (Fast Discovery + Pipelining). Primary file finder.
+3) **Search:** `ast-grep` (Structural), `rg` (Text). Pattern matching.
+4) **Transform:** `ast-grep -U` (Structural), `srgn` (Grammar-Regex). Code edits.
+5) **JSON:** `jql` (PRIMARY), `jaq` (jq-compatible). Token-efficient JSON read/write/edit.
+6) **Diff:** `bat -P -d` (Inline), `difft` (Structural). Verification/review.
+7) **Context:** `repomix` (MCP). Pack/Analyze codebases.
 
 **Tool Selection [Second-Class Tools - SUPPORT]:**
 1) **Utilities:** `zoxide` (Nav), `eza` (List), `bat` (Read), `huniq` (Dedupe).
-2) **Analysis:** `tokei` (Stats), `ripgrep` (Text Search), `fselect` (SQL Query), `global` (Symbol Nav).
+2) **Analysis:** `ripgrep` (Text Search), `fselect` (SQL Query), `global` (Symbol Nav).
 3) **Ops:** `hck` (Column Cut), `rargs` (Regex Args), `nomino` (Rename).
 4) **VCS:** `git-branchless` (Main), `mergiraf` (Merge), `difftastic` (Diff).
 5) **Data:** `jql` (JSON - Primary), `jaq` (jq-compatible).
@@ -187,10 +238,11 @@ Default to research over action. Do not jump into implementation unless clearly 
 - `ls` → USE `eza`
 - `find` → USE `fd`
 - `grep` → USE `rg` or `ast-grep`
-- `cat` → USE `bat`
+- `cat` for reading files → USE `bat -P -p -n`
 - `ps` → USE `procs`
 - `diff` → USE `difft`
 - `time` → USE `hyperfine`
+- `rm` / `rm -rf` → USE `rip` (trash-based, safer) [MANDATORY]
 - `sed` → ALWAYS USE `srgn` or `ast-grep -U` or `Edit suite`
 
 <fd_first_enforcement>
@@ -314,6 +366,10 @@ Workspace editing tools. Excellent for straightforward edits, multi-file changes
 ### 3) eza [MANDATORY]
 Modern ls replacement. **NEVER use ls—always eza --git-ignore.**
 
+### 3.5) bat [MANDATORY]
+`cat` replacement. Default baseline args: `bat -P -p -n`. Flags: `P`(no pager), `-p` (plain), `-l` (lang), `-A` (show-all), `-r` (range), `-d` (diff), `-n` (show line numbers; can be combined with `-p` for using line numbers with plain text).
+Example: `bat -P -p -n --line-range 10:20 file.rs`
+
 ### 4) fd [SCOPE FIRST - MANDATORY]
 Modern find replacement - use FIRST before large operations to scope target files.
 *   **Find files:** `fd -e py -E venv`
@@ -403,7 +459,7 @@ AI-optimized codebase analysis via MCP. Pack repositories into consolidated file
 - **Search packed:** `grep_repomix_output(outputId="id", pattern="pattern")`
 - **Read packed:** `read_repomix_output(outputId="id", startLine=1, endLine=100)`
 
-**Options:** `compress` (Tree-sitter compression, ~70% token reduction), `includePatterns`, `ignorePatterns`, `style` (xml/markdown/json/plain)
+**Options:** `compress` (Tree-sitter compression, ~70% token reduction, **recommended**), `includePatterns`, `ignorePatterns`, `style` (xml/markdown/json/plain)
 
 ### Quick Reference
 **Code search:** `ast-grep -p 'function $NAME($ARGS) { $$$ }' -l js -C 3` (HIGHLY PREFERRED) | Fallback: `rg 'TODO' -A 5`
