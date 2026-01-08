@@ -75,7 +75,7 @@ Default to research over action. Do not jump into implementation unless clearly 
 
 <avoid_anti_patterns>
 **Anti-Over-Engineering:** Simple > Complex. Standard lib first. Minimal abstractions.
-**YAGNI:** No unused features/configs. No premature opt. No cargo-culting.
+**YAGNI (MANDATORY):** No unused features/configs. No premature opt. No cargo-culting.
 **Tooling:** Must use `ast-grep`/`ripgrep`/`fd` for searching. Never use `grep -r` or `find`.
 **Keep Simple:** Edit existing files first. Remove dead code. Defer abstractions.
 </avoid_anti_patterns>
@@ -238,12 +238,13 @@ Default to research over action. Do not jump into implementation unless clearly 
 - `ls` → USE `eza`
 - `find` → USE `fd`
 - `grep` → USE `rg` or `ast-grep`
-- `cat` for reading files → USE `bat -P -p -n`
+- `cat` for reading files → USE `bat -P -p -n --color=always`
 - `ps` → USE `procs`
 - `diff` → USE `difft`
 - `time` → USE `hyperfine`
 - `rm` / `rm -rf` → USE `rip` (trash-based, safer) [MANDATORY]
 - `sed` → ALWAYS USE `srgn` or `ast-grep -U` or `Edit suite`
+- `perl` / `perl -i` / `perl -pe` → USE `ast-grep -U` or `awk`
 
 **Tool preferences:**
 
@@ -371,7 +372,7 @@ Workspace editing tools. Excellent for straightforward edits, multi-file changes
 Modern ls replacement. **NEVER use ls—always eza --git-ignore.**
 
 ### 3.5) bat [MANDATORY]
-`cat` replacement. Default baseline args: `bat -P -p -n`. Flags: `P`(no pager), `-p` (plain), `-l` (lang), `-A` (show-all), `-r` (range), `-d` (diff), `-n` (show line numbers; can be combined with `-p` for using line numbers with plain text).
+`cat` replacement. Default baseline args: `bat -P -p -n --color=always`. Flags: `P`(no pager), `-p` (plain), `-l` (lang), `-A` (show-all), `-r` (range), `-d` (diff), `-n` (show line numbers; can be combined with `-p` for using line numbers with plain text).
 Example: `bat -P -p -n --line-range 10:20 file.rs`
 
 ### 4) fd [SCOPE FIRST - MANDATORY]
