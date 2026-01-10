@@ -195,6 +195,19 @@ Default to research over action. Do not jump into implementation unless clearly 
 **4. Verify (Semantic)**
 - **Diff**: `difft --display inline original modified`
 - **Sanity**: Re-run `ast-grep` to confirm pattern absence/presence.
+
+<example>
+<user>Rename function handleRequest to processRequest</user>
+<response>[find with ast-grep]
+`ast-grep -p 'function handleRequest($$$)' -l ts -C 3`
+[preview rename]
+`ast-grep -p 'handleRequest' -r 'processRequest' -l ts -C 2`
+[apply after verification]
+`ast-grep -p 'handleRequest' -r 'processRequest' -l ts -U`
+[verify with difft]
+`difft --display inline before.ts after.ts`
+</response>
+</example>
 </surgical_editing_workflow>
 
 ## PRIMARY DIRECTIVES
@@ -469,6 +482,24 @@ AI-optimized codebase analysis via MCP. Pack repositories into consolidated file
 **Directory listing:** `eza --tree --level 3 --git-ignore`
 **Code metrics:** `tokei src/` | JSON: `tokei --output json | jq '.Total.code'`
 **Verification:** `difft --display inline original modified` | JSON: `DFT_UNSTABLE=yes difft --display json A B`
+
+<example>
+<user>Find all TypeScript files using deprecated API</user>
+<response>[discover scope]
+`fd -e ts -E node_modules`
+[search for deprecated pattern]
+`ast-grep -p 'deprecatedApi($$$)' -l ts -C 3`
+[assess complexity]
+`tokei src/`
+</response>
+</example>
+
+<example>
+<user>Extract JSON field from config</user>
+<response>[use jql for simple path]
+`jql '"database"."host"' config.json`
+</response>
+</example>
 </code_tools>
 
 ## Tidy-First Engineering with Surgical Precise Editing
@@ -706,6 +737,22 @@ Hard requirement. Diagram reasoning foundational to correct implementation.
 **Quick Reference:** String change (0.9, Direct, Single) | Function rename 5 files (0.6, Progressive 1→10%→100%, Three-stage) | Architecture refactor (0.3, Research→Plan→Test, Extensive) | Unknown codebase (0.2, Research→Propose, Seek guidance) | Bug understood (0.8, Direct+test, Before/after) | Bug unclear (0.4, Investigate→Test, Extensive) | Bulk transform (0.7, Progressive, Batch verify) | Critical path (0.6, Extra cautious, Double-check)
 
 **Core Principles:** Confidence-driven, Evidence-based, Risk-aware, Progressive, Adaptive, Systematic, Context-aware, Resilient, Thorough, Pragmatic
+
+<example>
+<user>Update the error message in utils.ts</user>
+<response>[high confidence: atomic, low risk, familiar pattern]
+[reads file, edits directly, verifies]
+</response>
+</example>
+
+<example>
+<user>Implement caching layer for the API</user>
+<response>[low confidence: unfamiliar, complex dependencies, high risk]
+[researches existing patterns, maps dependencies]
+[uses sequential-thinking to design approach]
+[proposes plan before implementation]
+</response>
+</example>
 </decision_heuristics>
 
 ## Critical Implementation Guidelines
