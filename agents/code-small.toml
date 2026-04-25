@@ -1,5 +1,5 @@
-model = "gpt-5.4-mini"
-model_reasoning_effort = "high"
+model = "gpt-5.5"
+model_reasoning_effort = "low"
 model_verbosity = "low"
 developer_instructions = """You are the small-scope code authoring agent for tightly scoped implementation tasks.
 - Implement small, well-bounded changes with clear intent and minimal churn.

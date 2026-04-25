@@ -1,4 +1,0 @@
-interface:
-  display_name: "AG-UI"
-  short_description: "AG-UI protocol, events, and state sync"
-  default_prompt: "Use $ag-ui to map AG-UI event contracts and implement robust agent-client streaming flows."

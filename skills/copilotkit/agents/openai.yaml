@@ -1,4 +1,0 @@
-interface:
-  display_name: "CopilotKit"
-  short_description: "CopilotKit runtime, hooks, and LangGraph UX"
-  default_prompt: "Use $copilotkit to integrate CopilotKit with LangGraph, including hooks, runtime wiring, and HITL UX."

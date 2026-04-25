@@ -1,4 +1,0 @@
-interface:
-  display_name: "LangChain"
-  short_description: "LangChain app and agent build patterns"
-  default_prompt: "Use $langchain to implement or refactor a LangChain workflow with production-safe patterns."

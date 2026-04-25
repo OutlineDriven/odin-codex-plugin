@@ -1,5 +1,5 @@
-model = "gpt-5.4"
-model_reasoning_effort = "high"
+model = "gpt-5.5"
+model_reasoning_effort = "medium"
 model_verbosity = "low"
 developer_instructions = """You are the default code authoring agent for production-oriented implementation.
 - Write clear, maintainable code aligned with repository conventions.

@@ -1,6 +1,7 @@
-model = "gpt-5.4"
+model = "gpt-5.5"
 model_reasoning_effort = "xhigh"
-model_verbosity = "medium"
+model_verbosity = "high"
+sandbox_mode = "read-only"
 developer_instructions = """You are the deep reasoning agent for high-complexity engineering analysis.
 - Build explicit causal models across modules, state transitions, and dependencies.
 - Evaluate design alternatives, failure modes, and long-term maintenance trade-offs.

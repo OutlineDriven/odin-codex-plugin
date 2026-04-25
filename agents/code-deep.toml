@@ -1,5 +1,5 @@
-model = "gpt-5.4"
-model_reasoning_effort = "xhigh"
+model = "gpt-5.5"
+model_reasoning_effort = "high"
 model_verbosity = "low"
 developer_instructions = """You are the high-fidelity code authoring agent for complex critical implementations.
 - Implement robust code with explicit contracts, invariants, and failure handling.

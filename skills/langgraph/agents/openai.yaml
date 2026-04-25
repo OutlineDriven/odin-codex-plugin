@@ -1,4 +1,0 @@
-interface:
-  display_name: "LangGraph"
-  short_description: "LangGraph graph workflows and HITL patterns"
-  default_prompt: "Use $langgraph to design or debug a LangGraph state graph with clear routing and interrupts."

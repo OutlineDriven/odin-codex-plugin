@@ -1,13 +1,19 @@
-model_reasoning_effort = "high"
+model_reasoning_effort = "medium"
+plan_mode_reasoning_effort = "xhigh"
 model_verbosity = "low"
 approval_policy = "on-request"
+web_search = "live"
+check_for_update_on_startup = true
 sandbox_mode = "workspace-write"
 project_doc_fallback_filenames = ["CLAUDE.md"]
-model = "gpt-5.4"
+model = "gpt-5.5"
 model_context_window = 1000000  # Use 1M Context Window
-model_auto_compact_token_limit = 850000  # Use 800K Auto Compact Token Limit
+model_auto_compact_token_limit = 800000  # Use 800K Auto Compact Token Limit
 personality = "pragmatic"
 suppress_unstable_features_warning = true
+show_raw_agent_reasoning = true
+model_reasoning_summary = "detailed"
+model_supports_reasoning_summaries = true
 compact_prompt = """You are performing CONTEXT CHECKPOINT COMPACTION. Create a handoff summary another LLM can continue without losing intent.
 
 Prioritize:
@@ -39,40 +45,56 @@ Brief chronological analysis of the conversation, including major pivots and use
 8. Current Work
 9. Optional Next Step (must align with the latest explicit user request; quote the relevant latest line when applicable)
 </summary>"""
-approvals_reviewer = "guardian_subagent"
+approvals_reviewer = "auto_review"
+commit_attribution = ""
 
 [features]
 undo = true
 enable_request_compression = true
 apply_patch_freeform = true
-multi_agent = true
-collaboration_modes = true
+apply_patch_streaming_events = true
+multi_agent_v2 = true
 personality = true
 
 memories = true
 child_agents_md = true
-# js_repl = true
-# runtime_metrics = true
-# plugins = true
+js_repl = true
 
-responses_websockets = true
-responses_websockets_v2 = true
+runtime_metrics = true
+plugins = true
+code_mode = true
+chronicle = true
+remote_control = true
+
 prevent_idle_sleep = true
 artifact = true
 
 # Question Tool On Default Mode Too
-# default_mode_request_user_input = true
+default_mode_request_user_input = true
+
+apps = false
+general_analytics = false
 
 guardian_approval = true
+enable_fanout = true
 tool_suggest = true
+image_generation = true
 
 [agents]
-max_depth = 1
-max_threads = 32
-# max_depth = 2
-# max_threads = 64
-
+max_depth = 2
 job_max_runtime_seconds = 96000  # Default: 1800 seconds
+
+[agents.default]
+description = "General-purpose fallback agent for small analysis, coordination, and tasks that do not need a specialized role."
+config_file = "agents/default.toml"
+
+[agents.explorer]
+description = "Read-only codebase exploration agent for mapping files, symbols, flows, and constraints before implementation."
+config_file = "agents/explorer.toml"
+
+[agents.worker]
+description = "Execution-focused agent for implementation, targeted fixes, and verification after the task is understood."
+config_file = "agents/worker.toml"
 
 [agents.plan]
 description = "Architecture and implementation planner. USE FOR: execution plans, dependency sequencing, risk and rollback strategy. NOT FOR: direct code edits or fast lookups. Produces actionable, file-scoped steps and verification guidance."
@@ -82,9 +104,9 @@ config_file = "agents/plan.toml"
 description = "External research specialist. USE FOR: library patterns, upstream APIs, and version-specific behavior analysis. NOT FOR: local code edits. Provides sourced references and applicability notes for implementation."
 config_file = "agents/librarian.toml"
 
-# [agents.code-fast]
-# description = "Rapid code authoring agent. USE FOR: scaffolding, boilerplate, and quick feature implementation. NOT FOR: debugging or analysis (use fast) or hardening passes."
-# config_file = "agents/code-fast.toml"
+[agents.code-fast]
+description = "Rapid code authoring agent. USE FOR: scaffolding, boilerplate, and quick feature implementation. NOT FOR: debugging or analysis (use fast) or hardening passes."
+config_file = "agents/code-fast.toml"
 
 [agents.code-small]
 description = "Small-scope code authoring agent. USE FOR: tightly scoped implementation tasks, concise targeted fixes, and low-blast-radius edits. NOT FOR: debugging or analysis-only tasks (use fast or general), scaffolding-heavy speed runs (use code-fast), or broader production changes (use code)."
@@ -98,9 +120,9 @@ config_file = "agents/code.toml"
 description = "High-fidelity code authoring agent. USE FOR: complex critical-path implementations requiring exhaustive correctness. NOT FOR: reasoning-only analysis (use deep) or quick prototypes."
 config_file = "agents/code-deep.toml"
 
-# [agents.fast]
-# description = "Fast general-purpose agent for quick analysis and fixes. USE FOR: rapid debugging, triage, small mixed-concern patches. NOT FOR: dedicated feature implementation (use code-fast) or deep reasoning."
-# config_file = "agents/fast.toml"
+[agents.fast]
+description = "Fast general-purpose agent for quick analysis and fixes. USE FOR: rapid debugging, triage, small mixed-concern patches. NOT FOR: dedicated feature implementation (use code-fast) or deep reasoning."
+config_file = "agents/fast.toml"
 
 [agents.deep]
 description = "Deep reasoning agent for complex analysis. USE FOR: multi-file debugging, intricate refactoring logic, high-risk technical decisions. NOT FOR: straightforward code authoring (use code-deep) or trivial edits."
@@ -125,7 +147,10 @@ writable_roots = ["/tmp"]
 # Send desktop notifications when approvals are required or a turn completes.
 # Defaults to false.
 notifications = true
+notification_condition = "always"
+notification_method = "bel"
 animations = false
+show_tooltips = false
 status_line = [
   "model-with-reasoning",
   "git-branch",
@@ -135,6 +160,9 @@ status_line = [
   "weekly-limit",
   "used-tokens"
 ]
+
+[tui.model_availability_nux]
+"gpt-5.5" = 3
 
 # [Start] MCP Servers
 [mcp_servers.context7]

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Assistant UI"
-  short_description: "Build assistant-ui chat apps fast"
-  default_prompt: "Use $assistant-ui to set up runtime, UI primitives, and tool integration for my React app."
