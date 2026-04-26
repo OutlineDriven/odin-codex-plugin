@@ -53,7 +53,7 @@ undo = true
 enable_request_compression = true
 apply_patch_freeform = true
 apply_patch_streaming_events = true
-multi_agent_v2 = true
+# multi_agent_v2 = true
 personality = true
 
 memories = true
