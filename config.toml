@@ -12,7 +12,7 @@ model_auto_compact_token_limit = 800000  # Use 800K Auto Compact Token Limit
 personality = "pragmatic"
 suppress_unstable_features_warning = true
 show_raw_agent_reasoning = true
-model_reasoning_summary = "detailed"
+# model_reasoning_summary = "detailed"
 model_supports_reasoning_summaries = true
 compact_prompt = """You are performing CONTEXT CHECKPOINT COMPACTION. Create a handoff summary another LLM can continue without losing intent.
 
