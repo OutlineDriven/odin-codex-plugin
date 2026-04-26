@@ -82,6 +82,7 @@ image_generation = true
 
 [agents]
 max_depth = 2
+max_threads = 128
 job_max_runtime_seconds = 96000  # Default: 1800 seconds
 
 [agents.default]
