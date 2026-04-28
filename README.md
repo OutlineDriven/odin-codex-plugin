@@ -15,7 +15,7 @@ git clone https://github.com/OutlineDriven/odin-codex-plugin ~/.codex
 
 ```bash
 git clone https://github.com/OutlineDriven/odin-codex-plugin
-mv ./odin-codex-plugin/* ~/.codex/
+rsync -a ./odin-codex-plugin/ ~/.codex/
 ```
 
 That easy.
