@@ -1,6 +1,6 @@
 ---
 name: test-driven
-description: Test-Driven Development (TDD) - design tests from requirements, then execute RED -> GREEN -> REFACTOR cycle. Use when implementing features or fixes with TDD methodology, writing tests before code, or following XP-style development across any supported language.
+description: Test-Driven Development (TDD) across any supported language. Use when implementing features or fixes with TDD methodology, writing tests before code, or following XP-style development.
 ---
 
 # Test-driven development (XP-style)
@@ -99,3 +99,15 @@ See [examples](references/examples.md) for brief TDD cycle patterns per language
 | 13 | Tests not failing (RED state invalid) |
 | 14 | Tests fail after implementation (GREEN not achieved) |
 | 15 | Tests fail after refactor (regression) |
+
+---
+
+## Reference materials (mattpocock/skills tdd fold-in)
+
+- `references/mocking.md` — when to mock vs use real implementations; trade-offs.
+- `references/interface-design.md` — interface shape and depth in TDD context.
+- `references/refactoring.md` — refactor step discipline post-green.
+- `references/deep-modules.md` — Ousterhout's deep-module heuristic applied to TDD.
+- `references/tests.md` — what counts as a real-bug test vs ceremony.
+
+These reference docs are MIT-licensed (see `/home/alpha/.claude/claude/skills/LICENSES.md` for full attribution).
