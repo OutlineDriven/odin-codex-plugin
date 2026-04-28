@@ -1,6 +1,6 @@
 ---
 name: design
-description: Set visual and interaction direction for any UI surface — web (vanilla CSS), React, TUI, CLI, desktop (Tauri/Slint/egui/Iced), Qt, or design-system tokens — before a single line of UI code. Drives a direction-first workflow: generates 3-4 radically distinct visual directions in parallel via verbalized sampling, commits to one via per-axis single-select, then derives palette, typography, spacing, and motion budget from the picked direction. Loads when the user requests UI work, asks for a palette / theme / tokens, mentions a design system, or when output looks AI-generic, vibe-coded, sloppy, or default Tailwind / shadcn / Bootstrap. Enforces ODIN anti-slop charter AND a restraint posture: forbids purple-blue / purple-pink gradients, `transition: all`, system-ui, pure primaries, self-generated palettes, gradients on buttons or titles — AND overkill compensation (sprites everywhere, gradients on every section, animation on every element). Pairs with odin:askme for direction picks and odin:design-an-interface for the parallel-generation pattern. Distinct from design-an-interface, which shapes API contracts.
+description: 'Set visual and interaction direction for any UI surface — web, React, TUI, CLI, desktop (Tauri/Slint/egui/Iced), Qt, or design-system tokens — before any UI code. Direction-first: generates 3-4 radically distinct directions in parallel via verbalized sampling, picks one via per-axis single-select, then derives palette, typography, spacing, and motion budget from the pick. Loads when the user asks for UI work, a palette / theme / tokens, mentions a design system, or when output looks AI-generic, vibe-coded, sloppy, or default Tailwind / shadcn / Bootstrap. Enforces a two-sided anti-slop charter: forbids purple gradients, `transition: all`, system-ui, default Tailwind palette, gradients on buttons — AND overkill compensation (sprites, gradients on every section, animation on every element).'
 ---
 
 Direction first, tokens second, code last. Restraint is the default posture; ONE intentional moment per surface earns the lift.
@@ -8,6 +8,8 @@ Direction first, tokens second, code last. Restraint is the default posture; ONE
 ## Posture
 
 Direction precedes tokens; tokens precede code. The picked direction is the contract — palette, type, spacing, motion all derive from it, not the other way around. Restraint is the default; reach for decoration only when a named surface goal demands it. Posture rests on `references/soul.md` (design philosophy) — load when the user asks "why this look" or when the model is tempted to add decoration to compensate for a thin idea.
+
+**Balance, not maximalism.** ODIN's "don't hold back" (borrowed from the `<design>` block above) means conviction, not volume. The two failure modes catalogued in the anti-slop charter below are reciprocals — AI-generic timidity (Side A) and decorative overkill (Side B) both come from the same fear of commitment. Balance simplicity and verbosity per surface; restraint as the default, the one intentional moment as the lift, neither timid nor loud.
 
 ## ODIN `<design>` block — LOAD-BEARING
 
@@ -24,6 +26,10 @@ Modern, elegant UI/UX. Don't hold back.
 **Gate:** Design excellence >= 95%
 </design>
 ```
+
+## Register × paradigm matrix — pointer
+
+Brand register opens neo-brutalism / glassmorphism / M3 Expressive with Committed / Full palette / Drenched color strategies; product register defaults to Restrained + post-minimalism / Fluent 2. Full matrix in `references/paradigms.md §0`.
 
 ## Anti-slop charter — LOAD-BEARING
 
@@ -50,6 +56,15 @@ Two-sided ban-list. Each row: ban — WHY in one line. Depth in `references/anti
 - Animation on every element entrance — motion budget is a budget; spend it once.
 - Multi-paradigm mash (neo-brutalism shadow on a glass card on a Material 3 button) — paradigm conflict reads as confusion, not eclecticism.
 - Decorative noise compensating for a thin idea — when the surface earns its weight, restraint amplifies it.
+
+**Color strategy axis (commitment level).** Pick the strategy before picking colors. Each tier is deliberate, not a fallback.
+
+- **Restrained** — tinted neutrals plus one accent at ≤10% surface coverage. Product default.
+- **Committed** — one saturated color carries 30–60% of the surface. Brand default for identity-driven pages.
+- **Full palette** — 3-4 named roles, each used deliberately. Brand campaigns; product data viz.
+- **Drenched** — the surface IS the color. Brand heroes, campaign pages.
+
+The "one accent ≤10%" cap applies only to **Restrained**. Committed / Full palette / Drenched exceed it on purpose; treat the cap as direction-conditional, not universal.
 
 ## Direction-first workflow
 
