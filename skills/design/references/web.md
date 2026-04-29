@@ -164,6 +164,40 @@ Vanilla custom properties under `:root`. One concrete example:
 }
 ```
 
+## 3.5 Motion timing bands
+
+Time scales are perceptual, not arbitrary. Five bands cover production motion needs:
+
+- **~80ms** — perceptual "instant" threshold. Below this, the user does not register a transition; above, motion becomes communication.
+- **100-150ms** — instant feedback (button press, hover state, focus ring).
+- **200-300ms** — state changes (panel open, input focus expansion, tab switch).
+- **300-500ms** — layout changes (modal entrance, card flip, drawer slide).
+- **500-800ms** — page entrance, first paint, hero reveal.
+
+Exit durations run ~75% of entrance — quick to leave, deliberate to arrive. Named easing curves only; no bounce, no elastic (these read as 2015-trendy on production surfaces in 2026):
+
+```css
+:root {
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);   /* default */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);   /* heaviest */
+}
+```
+
+## 3.6 OKLCH thresholds
+
+Tinted neutrals carry chroma 0.005-0.015 toward the brand hue — pure greys (`oklch(L 0 H)`) read as institutional, not designed. Reduce chroma as lightness approaches 0 or 100; saturated extremes look garish at the boundaries of the lightness range and clip outside common gamuts.
+
+Dark-mode surface scale uses three steps at lightness 15% / 20% / 25%, sharing the same hue and chroma so the steps read as elevation, not as separate colors. Light-on-dark text needs optical compensation: bump line-height by +0.05-0.1, and step weight up one notch (regular → medium, medium → semibold). The same string of body copy that reads at 16px/regular on light backgrounds needs 16px/medium with looser leading on dark to match perceived density.
+
+## 3.7 Typography vertical rhythm
+
+Within text blocks, line-height is the base unit for vertical spacing between consecutive lines, paragraphs, and adjacent headings. Body line-height 1.5 on 16px = 24px, so paragraph spacing inside prose composes from 24px increments and adjacent-element gaps inside long-form content snap to that grid. Vertical alignment between adjacent text blocks emerges for free.
+
+For component layout, padding, and inter-section spacing, defer to the `--space-*` tokens declared in §3 (4 / 8 / 12 / 16 / 24 / 32 / 48 / 64). The line-height rhythm and the spacing scale serve different roles — text rhythm is dense and prose-local; layout spacing is coarse and structural. Conflating them produces either airless prose or chunky layouts.
+
+Type size scale: five steps (xs / sm / base / lg / xl) with a single ratio — 1.25 (gentle), 1.333 (default), or 1.5 (loud). Pick one ratio at the start and commit; mid-build ratio swaps cascade through every component and re-break alignment.
+
 ## 4. Layout patterns
 
 **Container queries over breakpoints.** Component CSS sizes itself by container, not viewport. A card placed in a 280px sidebar collapses to single-column without the parent caring; placed in a 960px main column it expands. Reusability follows.
@@ -175,6 +209,32 @@ Vanilla custom properties under `:root`. One concrete example:
 **`text-wrap: balance` for headlines.** Automatic visual balance on text blocks of ≤6 lines. Apply globally to `h1`, `h2`, and `.lede`-class blockquotes; do not apply to body paragraphs (browsers cap balanced blocks for performance and the cost on a long article is real).
 
 **`color-mix()` for state variants.** Hover, pressed, disabled, focus-ring tints all compose from the base accent via `color-mix(in oklch, ...)`. The token surface stays small; the variants stay perceptually consistent.
+
+**Breakpoint-free responsive grid.** `grid-template-columns: repeat(auto-fit, minmax(280px, 1fr))` produces card layouts that reflow without media queries. The card decides its own minimum width; the grid decides how many fit. Pair with `gap` for spacing instead of margins.
+
+## 4.5 Forms patterns
+
+Inputs need `autocomplete` and `name` for autofill engines; semantic `type` and `inputmode` drive the right mobile keyboard. Labels are clickable via `<label for>` association. Submit buttons stay enabled until the request fires (disabling pre-submit blocks debugging); swap the label for a spinner during loading. Inline errors render under the offending field; focus moves to the first invalid input on submit failure.
+
+Placeholders end with `…` when they show a pattern (`Search by name…`, `123-45-6789…`); never substitute placeholders for labels. `autocomplete="off"` belongs on non-auth fields only (one-time codes, captchas); never on passwords or addresses. Warn before navigation with unsaved changes (`beforeunload` or framework equivalent). Never prevent paste — paste-blocking on password fields pushes users toward weaker passwords. Disable spellcheck (`spellcheck="false"`) on usernames, URLs, and code identifiers. Checkboxes and radios are a single hit target — whole label clickable, not just the box.
+
+## 4.6 Touch interaction
+
+`touch-action: manipulation` on tappable elements eliminates the 300ms double-tap-zoom delay on iOS. Set `-webkit-tap-highlight-color` intentionally (token color or `transparent`); default-blue is a Safari default, not a design choice. `overscroll-behavior: contain` on modals and drawers stops scroll-chaining into the page beneath. During drag, disable text selection (`user-select: none`) and apply `inert` to background content so screen readers don't pick up irrelevant nodes. `autoFocus` is desktop-only — on mobile it summons the keyboard and shifts the viewport before the user has read the form.
+
+## 4.7 Safe areas + viewport
+
+`env(safe-area-inset-*)` for notch / dynamic-island / home-indicator padding on iOS and Android. `overflow-x: hidden` on full-bleed containers prevents accidental horizontal scrollbars from long unbreakable strings or transformed elements. `font-variant-numeric: tabular-nums` on numeric columns aligns digit widths so totals, timestamps, and prices stack cleanly.
+
+## 4.8 Dark mode native fixes
+
+`color-scheme: dark` on `<html>` fixes default scrollbar color and native form-input rendering on Windows in one property. Match `<meta name="theme-color">` to the page background per theme — the browser chrome adopts this color on iOS Safari and Android Chrome, and a mismatch reads as a flicker between page and frame. Native `<select>` needs explicit `background-color` and `color` in dark mode on Windows; the OS otherwise picks white-on-white.
+
+## 4.9 i18n + locale
+
+Use `Intl.DateTimeFormat` and `Intl.NumberFormat` for all dates, times, and numbers — never hardcode `MM/DD/YYYY`, `1,000.00`, or currency symbols. Detect locale via `Accept-Language` (server) or `navigator.languages` (client); never IP-based geolocation, which conflates location with language preference (a French speaker in Tokyo wants French, not Japanese). `translate="no"` on brand names, code identifiers, monospace tokens, and proper nouns — Google Translate will otherwise render `Stripe` as `Bande` in French; apply per-element, not site-wide.
+
+Text-expansion budget per locale: German +30%, French +20%, Finnish +30-40%, Chinese -30%. Buttons, labels, and table headers must accommodate the swing without wrapping or truncating; design at the longest expected length and let other locales breathe.
 
 ## 5. Forbidden in tokens
 
