@@ -74,7 +74,6 @@ Calibration: Success +0.1 (cap 1.0), Failure -0.2 (floor 0.0). Default: research
 **Compression Loop:** Shape → Compress → Measure → Repair (the verb `Compress` here names the loop's entropy-reduction step, distinct from the op-axis value `compress`). Iterate until measured entropy reduction stops improving or rejection-category risk (overkill / monkey-patching / overcomplication) crosses the budget.
 **Scope Principle:** As scope and coupling grow, increase planning depth, delegation, and verification rigor. Prefer direct edits only for tightly scoped atomic work with clear impact boundaries.
 **Flow Principle:** Use parallel execution only for truly independent work with known inputs and no shared state; otherwise prefer sequence.
-**Ask-First (No Speculation) [SCOPED—ambiguous/high-risk/underspecified]:** When intent is ambiguous, risk is high, or the request is underspecified, make the op choice (compress / extend / correct) explicit before editing, never speculate about unread code or unstated intent, research first, then present concrete example options with trade-offs plus a recommendation. Trivial or fully specified changes stay on the direct path; do not impose this gate where confidence is high and impact is bounded.
 **Plan-First:** Always produce a plan before edits, naming the op (compress / extend / correct) and expected gain or rejection-category risk budget. Keep every plan present, but scale depth to scope and risk. If planning stalls, trim detail and preserve direction rather than skipping planning.
 
 **Research vs. Act:** Research: unfamiliar code, unclear dependencies, high risk, confidence <0.5, multiple solutions | Act: familiar patterns, clear impact, low risk, confidence >0.7, single solution
@@ -139,7 +138,7 @@ Calibration: Success +0.1 (cap 1.0), Failure -0.2 (floor 0.0). Default: research
 
 **Doc retrieval:** context7, ref-tool, github-grep, parallel, fetch. Follow internal links (depth 2-3). Priority: 1) Official docs 2) API refs 3) Books/papers 4) Tutorials 5) Community
 
-**Banned [HARD—REJECT]:** `ls`→`eza` | `find`→`fd` | `grep`→`git grep`/`rg`/`ast-grep` | `cat`→`bat -P -p -n` | `ps`→`procs` | `diff`→`difft` | `time`→`hyperfine` | `sed`→`srgn`/`ast-grep -U` | `perl -i`→`ast-grep -U`/`srgn`/`Edit suite` | `rm`→`rip`
+**Banned [HARD—REJECT]:** `ls`→`eza` | `find`→`fd` | `grep`→`rg`/`ast-grep` | `cat`→`bat -P -p -n` | `ps`→`procs` | `diff`→`difft` | `time`→`hyperfine` | `sed`→`srgn`/`ast-grep -U` | `rm`→`rip`
 
 ### Token-Efficient CLI Output
 Minimize output tokens at the command layer. ANSI colors waste 15-25% of tokens.
@@ -453,19 +452,23 @@ Modern, elegant UI/UX. Don't hold back.
 <languages>
 **General:** Immutability-first | Zero-copy hot paths | Fail-fast typed errors | Strict null-safety | Exhaustive matching
 
-**Rust:** Edition 2024 [MUST]. Zero-alloc/zero-copy, `#[inline]` hot paths, const generics, async closures, let chains, `gen` reserved, thiserror/anyhow, encapsulate unsafe, `#[must_use]`. Perf: criterion, LTO/PGO. Concurrency: crossbeam, atomics, lock-free only proved. Diag: Miri, sanitizers, cargo-udeps. Lint: clippy/fmt. Libs: crossbeam, smallvec, quanta, compact_str, bytemuck, zerocopy.
-**C:** torvalds/linux coding-style default (`Documentation/process/coding-style.rst`). C89/C11 + GNU extensions; 8-char tabs, K&R braces, snake_case, one-screen funcs; goto-based cleanup; ERR_PTR/PTR_ERR; container_of; READ_ONCE/WRITE_ONCE. Memory: explicit ownership; kmalloc/kfree | malloc/free; GFP flags. Concurrency: spinlocks, RCU, atomic_t | pthreads. Diag: sparse, smatch, KASAN/KMSAN/UBSAN | ASan/UBSan/TSan, Valgrind. Test: kunit | Unity/Criterion/cmocka. Lint: checkpatch.pl | clang-tidy/cppcheck. Format: clang-format Linux preset.
-**Modern C:** C23 (ISO/IEC 9899:2024). `nullptr`, `true`/`false`, `_BitInt(N)`, `constexpr` (object definitions only), `auto` type inference (object definitions), `static_assert`, standardized `[[nodiscard]]`/`[[deprecated]]`/`[[maybe_unused]]`, `#embed`, `#elifdef`. Mandatory prototypes; `constexpr` over macros. Compilers: GCC 15+ (default `-std=gnu23`), Clang 18+. Build: CMake/Meson. Diag: ASan/UBSan/TSan/MSan, Valgrind. Test: Unity (embedded), Criterion, cmocka. Fuzz: libFuzzer, AFL++, OSS-Fuzz. Lint: clang-tidy, cppcheck. Format: clang-format.
+**Rust:** Edition 2024 [MUST]. Zero-alloc/zero-copy, `#[inline]` hot paths, const generics, thiserror/anyhow, encapsulate unsafe, `#[must_use]`. Perf: criterion, LTO/PGO. Concurrency: crossbeam, atomics, lock-free only proved. Diag: Miri, sanitizers, cargo-udeps. Lint: clippy/fmt. Libs: crossbeam, smallvec, quanta, compact_str, bytemuck, zerocopy.
+
 **C++:** C++20+. RAII, smart ptrs, span/string_view, consteval/constexpr, zero-copy, move/forwarding, noexcept. Concurrency: jthread+stop_token, atomics. Build: CMake presets. Diag: sanitizers, Valgrind. Test: GoogleTest, rapidcheck. Lint: clang-tidy/format. Libs: {fmt}, spdlog.
-**TypeScript 5.9+:** Strict; discriminated unions; readonly; Result/Either; NEVER any/unknown; ESM; `using` declarations; Zod validation. tsconfig: noUncheckedIndexedAccess, NodeNext. Test: Vitest+Testing Library. Lint: biome.
-→ **React 19+:** RSC default. Suspense+Error boundaries; useTransition/useDeferredValue. State: Zustand/Jotai/TanStack Query. Forms: RHF+Zod. Style: Tailwind/CSS Modules. Design: shadcn/ui. A11y: semantic HTML, ARIA.
+
+**TypeScript:** Strict; discriminated unions; readonly; Result/Either; NEVER any/unknown; ESM; Zod validation. tsconfig: noUncheckedIndexedAccess, NodeNext. Test: Vitest+Testing Library. Lint: biome.
+→ **React:** RSC default. Suspense+Error boundaries; useTransition/useDeferredValue. State: Zustand/Jotai/TanStack Query. Forms: RHF+Zod. Style: Tailwind/CSS Modules. Design: shadcn/ui. A11y: semantic HTML, ARIA.
 → **Nest:** Modular; DTOs class-validator; Guards/Interceptors/Pipes. Prisma. Passport (JWT/OAuth2), argon2. Pino+OpenTelemetry. Helmet, CORS, CSRF.
-**Python 3.14+:** Strict type hints ALWAYS; f-strings; pathlib; dataclasses/attrs (frozen=True). Concurrency: asyncio/trio. Test: pytest+hypothesis. Typecheck: pyright/ty. Lint/Format: ruff. Pkg: uv/pdm. Libs: polars>pandas, pydantic, numba.
-**Java 25 LTS:** Records, sealed, pattern matching, virtual threads, scoped values, AOT cache, compact headers. Immutability-first; Streams; Optional returns. Test: JUnit 5+Mockito+AssertJ. Lint: Error Prone+NullAway/Spotless. Security: OWASP+Snyk.
+
+**Python:** Strict type hints ALWAYS; f-strings; pathlib; dataclasses/attrs (frozen=True). Concurrency: asyncio/trio. Test: pytest+hypothesis. Typecheck: pyright/ty. Lint/Format: ruff. Pkg: uv/pdm. Libs: polars>pandas, pydantic, numba.
+
+**Java 21+:** Records, sealed, pattern matching, virtual threads. Immutability-first; Streams; Optional returns. Test: JUnit 5+Mockito+AssertJ. Lint: Error Prone+NullAway/Spotless. Security: OWASP+Snyk.
 → **Spring Boot 3:** Virtual threads. RestClient, JdbcClient, RFC 9457. JPA+Specifications. Lambda DSL security, Argon2, OAuth2/JWT. Testcontainers.
-**Kotlin 2.2+:** K2 default+JVM 21+. val, persistent collections; sealed/enum+when; data classes; @JvmInline; inline/reified. Errors: Result/Either (Arrow); never !!/unscoped lateinit. Concurrency: structured coroutines, SupervisorJob, Flow, StateFlow/SharedFlow. Build: Gradle KTS+Version Catalogs; KSP>KAPT (KAPT deprecated). KMP+Compose Multiplatform production. Test: JUnit 5+Kotest+MockK+Testcontainers. Lint: detekt+ktlint. Libs: kotlinx.{coroutines,serialization,datetime,collections-immutable}, Arrow, Koin/Hilt.
-**Go 1.26+:** Context-first; goroutines/channels clear ownership; worker pools backpressure; errors %w typed/sentinel; interfaces=behavior. Concurrency: sync, atomic, errgroup. Test: testify+race detector. Lint: golangci-lint/gofmt+goimports. Tooling: go vet; go mod tidy.
-**OCaml 5.4+:** Interface-first (`.mli` required); type `t` abstract, smart constructors, `find_*` option / `get_*` value; never `Obj.magic`. Errors: `result` + `let*`/`let+` operators; exceptions for programming errors only; never bare `try _ with _`. Effects (OCaml 5) for control flow. Concurrency: Eio 1.0+ direct-style, capability-passing, `Switch.run` structured lifetimes. Build: dune 3.23+ + opam 2.2+; `.ocamlformat` + `dune fmt`. Test: Alcotest + QCheck. Diag: memtrace, odoc v3.
+
+**Kotlin:** K2+JVM 21+. val, persistent collections; sealed/enum+when; data classes; @JvmInline; inline/reified. Errors: Result/Either (Arrow); never !!/unscoped lateinit. Concurrency: structured coroutines, SupervisorJob, Flow, StateFlow/SharedFlow. Build: Gradle KTS+Version Catalogs; KSP>KAPT. Test: JUnit 5+Kotest+MockK+Testcontainers. Lint: detekt+ktlint. Libs: kotlinx.{coroutines,serialization,datetime,collections-immutable}, Arrow, Koin/Hilt.
+
+**Go:** Context-first; goroutines/channels clear ownership; worker pools backpressure; errors %w typed/sentinel; interfaces=behavior. Concurrency: sync, atomic, errgroup. Test: testify+race detector. Lint: golangci-lint/gofmt+goimports. Tooling: go vet; go mod tidy.
+**OCaml 5.2+:** Interface-first (`.mli` required); type `t` abstract, smart constructors, `find_*` option / `get_*` value; never `Obj.magic`. Errors: `result` + `let*`/`let+` operators; exceptions for programming errors only; never bare `try _ with _`. Effects (OCaml 5) for control flow. Concurrency: Eio direct-style, capability-passing, `Switch.run` structured lifetimes. Build: dune 3.x + opam 2.2+; `.ocamlformat` + `dune fmt`. Test: Alcotest + QCheck. Diag: memtrace, odoc v3.
 
 **Standards (measured):** Accuracy >=95% | Algorithmic: baseline O(n log n), target O(1)/O(log n), never O(n^2) unjustified | Performance: p95 <3s | Security: OWASP+SANS CWE | Error handling: typed, graceful, recovery paths | Reliability: error rate <0.01, graceful degradation | Maintainability: cyclomatic <10, cognitive <15
 **Gates:** Functional/Code/Tidiness/Elegance/Maint/Algo/Security/Reliability >=90% | Design/UX >=95% | Perf in-budget | ErrorRecovery+SecurityCompliance 100%
