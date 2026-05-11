@@ -1,13 +1,13 @@
 ---
 name: askme
-description: Verbalized Sampling (VS) protocol for deep intent exploration before planning, now mode-aware. Default `exhaustive` mode runs the existing VS protocol verbatim (callers without a mode arg get unchanged behavior). Optional `collaborative` mode runs a two-way tip-sharing dialogue; optional `adversarial` mode walks the design tree one fork at a time with recommendations per question. Mode-selection is hybrid — auto-detect from invoking-context phrasing ("help me refine" → collaborative, "poke holes" → adversarial, otherwise exhaustive) with explicit override via `/askme adversarial|collaborative|exhaustive`. Use when starting ambiguous or complex tasks, when multiple interpretations exist, or when you need to explore diverse intent hypotheses and ask maximum clarifying questions before committing to an approach.
+description: Verbalized Sampling (VS) protocol for intent exploration before planning, mode-aware. Default `exhaustive` runs full VS; `collaborative` runs tip-sharing dialogue; `adversarial` walks the design tree one fork at a time. Auto-detects from phrasing ("help me refine" → collaborative, "poke holes" → adversarial); override via `/askme adversarial|collaborative|exhaustive`. Use for ambiguous tasks or maximum clarifying questions before committing.
 ---
 
 # Ask Me Command
 
 Before proceeding to ask planning questions, you must *proactively and critically* execute both Verbalized Sampling (VS) and exploration:
 
-- For Verbalized Sampling, generate and *sample* multiple distinct intent hypotheses, assign each an explicit probability weight (0–1 scale), and identify the specific observation or scenario that would falsify each before selecting a direction. Expand hypothesis depth as ambiguity, risk, or architectural surface grows; keep concise when scope is truly narrow. Continue sampling while new hypotheses materially change planning decisions; broaden sampling if no clear leader emerges. Synthesize surviving hypotheses into one consolidated direction before responding. VS prevents over-engineering by surfacing simpler alternatives.
+- For Verbalized Sampling, sample multiple intent hypotheses, assign each an explicit probability weight (0–1 scale), and identify the specific observation or scenario that would falsify each before selecting a direction. Each hypothesis names which operation (compress / extend / correct) and the rejection category it must avoid (overkill, monkey-patching, overcomplication). Expand hypothesis depth as ambiguity, risk, or architectural surface grows; keep it concise when scope is truly narrow. Explore meaningful edge cases until additional cases stop changing the decision; broaden sampling if no clear leader emerges. Surface decision points early with concrete options and trade-offs. Synthesize surviving hypotheses into one consolidated direction before responding. Output should stay compact and decision-oriented: intent summary, assumptions, and focused questions. Do not proceed on non-trivial changes without visible VS.
 
 **Required VS Output Format:**
 ```
