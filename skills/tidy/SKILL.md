@@ -1,9 +1,9 @@
 ---
 name: tidy
-description: ODIN's compress-operations dispatcher under the Compressor/Extender role. Invoke on "tidy", "clean up", "tidy this file/memory/workspace/git/docs", or when active context (current file, diff, stack, memory directory) has structural rot to resolve before touching behavior. Detects target domain from context and routes to the sibling skill. Requires explicit target or clear active-context signal — do not invoke speculatively.
+description: Tidy-operations dispatcher. Invoke on "tidy", "clean up", "tidy this file/memory/workspace/git/docs", or when active context (current file, diff, stack, memory directory) has structural rot to resolve before touching behavior. Detects target domain from context and routes to the sibling skill. Requires explicit target or clear active-context signal — do not invoke speculatively.
 ---
 
-# Tidy — ODIN's compress-operations dispatcher
+# Tidy — structural-cleanup dispatcher
 
 Compress first. Before adding complexity, reduce coupling. Before changing behavior,
 improve structure. This skill detects *what* needs tidying from context and routes
